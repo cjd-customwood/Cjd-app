@@ -1,0 +1,2555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CJD Custom Wood & Home Accessories</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root {
+  --wood-dark: #3D2B1F;
+  --wood-mid: #6B4226;
+  --wood-warm: #8B5E3C;
+  --wood-light: #C49A6C;
+  --wood-pale: #E8D5B7;
+  --wood-cream: #F7F0E6;
+  --wood-white: #FDF9F4;
+  --grain: #D4A96A;
+  --accent: #B85C2A;
+  --accent-soft: #E8956A;
+  --green: #4A7C59;
+  --green-light: #E8F4EC;
+  --red: #A63228;
+  --red-light: #F9ECEB;
+  --blue: #2A5278;
+  --yellow: #8B6914;
+  --gray: #6B6259;
+  --border: #D9C9B3;
+  --shadow: rgba(61,43,31,0.12);
+  --shadow-deep: rgba(61,43,31,0.25);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-body); background: var(--wood-cream); color: var(--wood-dark); min-height: 100vh; font-size: 14px; line-height: 1.5; }
+
+/* ── SETUP SCREEN ── */
+#setup-screen {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--wood-dark); z-index: 2000; flex-direction: column;
+}
+#setup-screen::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 30% 40%, rgba(139,94,60,0.25) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 60% at 75% 65%, rgba(184,92,42,0.15) 0%, transparent 55%);
+}
+.setup-box {
+  position: relative; background: var(--wood-white); border-radius: 16px;
+  padding: 40px 36px; width: 100%; max-width: 420px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+  animation: loginDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+.setup-logo { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--wood-dark); margin-bottom: 4px; }
+.setup-sub { font-size: 11px; color: var(--wood-warm); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 8px; font-weight: 500; }
+.setup-desc { font-size: 12px; color: var(--gray); margin-bottom: 24px; line-height: 1.6; padding: 12px; background: var(--wood-cream); border-radius: 8px; border-left: 3px solid var(--wood-light); }
+.setup-desc a { color: var(--wood-warm); }
+
+/* ── LOGIN SCREEN ── */
+#login-screen {
+  position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: var(--wood-dark); z-index: 1000; flex-direction: column;
+}
+#login-screen::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse 60% 50% at 30% 40%, rgba(139,94,60,0.25) 0%, transparent 60%),
+              radial-gradient(ellipse 50% 60% at 75% 65%, rgba(184,92,42,0.15) 0%, transparent 55%);
+}
+.login-box {
+  position: relative; background: var(--wood-white); border-radius: 16px;
+  padding: 48px 44px; width: 100%; max-width: 380px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08);
+  animation: loginDrop 0.5s cubic-bezier(0.34,1.56,0.64,1) both;
+}
+@keyframes loginDrop {
+  from { transform: translateY(-30px) scale(0.95); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+.login-logo { font-family: var(--font-display); font-size: 26px; font-weight: 700; color: var(--wood-dark); line-height: 1.1; margin-bottom: 4px; letter-spacing: -0.5px; }
+.login-sub { font-size: 11px; color: var(--wood-warm); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 36px; font-weight: 500; }
+.login-box label, .setup-box label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--wood-mid); margin-bottom: 8px; }
+.login-box select, .login-box input, .setup-box input, .setup-box select {
+  width: 100%; padding: 12px 14px; border: 1.5px solid var(--border); border-radius: 8px;
+  font-family: var(--font-body); font-size: 14px; color: var(--wood-dark); background: var(--wood-cream);
+  margin-bottom: 16px; outline: none; transition: border-color 0.2s;
+}
+.login-box select:focus, .login-box input:focus, .setup-box input:focus { border-color: var(--wood-warm); }
+.btn-primary {
+  width: 100%; padding: 13px; background: var(--wood-dark); color: var(--wood-pale);
+  border: none; border-radius: 8px; font-family: var(--font-body); font-size: 13px;
+  font-weight: 600; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+  transition: all 0.2s; margin-top: 4px;
+}
+.btn-primary:hover { background: var(--wood-mid); }
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+.login-error { margin-top: 12px; font-size: 12px; color: var(--red); text-align: center; min-height: 16px; }
+.link-btn { background: none; border: none; color: var(--wood-warm); font-size: 12px; cursor: pointer; font-family: var(--font-body); text-decoration: underline; margin-top: 12px; display: block; text-align: center; }
+
+/* ── APP SHELL ── */
+#app { display: none; min-height: 100vh; }
+.topnav {
+  background: var(--wood-dark); display: flex; align-items: center; padding: 0 20px;
+  height: 56px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 12px var(--shadow-deep); gap: 8px;
+}
+.nav-brand { font-family: var(--font-display); font-size: 16px; font-weight: 700; color: var(--wood-pale); letter-spacing: -0.3px; white-space: nowrap; flex-shrink: 0; }
+.nav-tabs { display: flex; gap: 2px; margin-left: 24px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+.nav-tabs::-webkit-scrollbar { display: none; }
+.nav-tab {
+  padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  color: rgba(232,213,183,0.6); cursor: pointer; transition: all 0.2s; white-space: nowrap;
+  border: none; background: none; font-family: var(--font-body);
+}
+.nav-tab:hover { color: var(--wood-pale); background: rgba(255,255,255,0.06); }
+.nav-tab.active { color: var(--wood-pale); background: rgba(255,255,255,0.12); }
+.nav-user { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.nav-user-name { font-size: 12px; color: rgba(232,213,183,0.7); }
+.sync-indicator { font-size: 11px; color: rgba(232,213,183,0.5); display: flex; align-items: center; gap: 4px; }
+.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+.sync-dot.syncing { background: var(--grain); animation: pulse 1s infinite; }
+.sync-dot.error { background: var(--red); }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.btn-logout { font-size: 11px; padding: 5px 10px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12); border-radius: 5px; color: rgba(232,213,183,0.7); cursor: pointer; font-family: var(--font-body); transition: all 0.2s; }
+.btn-logout:hover { background: rgba(255,255,255,0.14); color: var(--wood-pale); }
+
+/* ── LOADING ── */
+.loading-overlay {
+  position: fixed; inset: 0; background: rgba(253,249,244,0.85); z-index: 900;
+  display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+  backdrop-filter: blur(4px);
+}
+.spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border);
+  border-top-color: var(--wood-warm); border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-text { font-size: 13px; color: var(--gray); font-weight: 500; }
+
+/* ── MAIN ── */
+.main { padding: 24px 20px; max-width: 1400px; margin: 0 auto; }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; flex-wrap: wrap; gap: 12px; }
+.section-title { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--wood-dark); letter-spacing: -0.5px; }
+
+/* ── STAT CARDS ── */
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-bottom: 24px; }
+.stat-card { background: var(--wood-white); border: 1px solid var(--border); border-radius: 10px; padding: 16px; position: relative; overflow: hidden; }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--wood-light); }
+.stat-card.green::before { background: var(--green); }
+.stat-card.red::before { background: var(--red); }
+.stat-card.blue::before { background: var(--blue); }
+.stat-card.accent::before { background: var(--accent); }
+.stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gray); margin-bottom: 6px; }
+.stat-value { font-family: var(--font-display); font-size: 22px; font-weight: 700; color: var(--wood-dark); line-height: 1; }
+.stat-sub { font-size: 11px; color: var(--gray); margin-top: 4px; }
+
+/* ── TABLE ── */
+.table-wrap { background: var(--wood-white); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; }
+.table-toolbar { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.search-input { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--font-body); font-size: 13px; color: var(--wood-dark); background: var(--wood-cream); outline: none; transition: border-color 0.2s; min-width: 180px; }
+.search-input:focus { border-color: var(--wood-warm); }
+.filter-select { padding: 7px 10px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--font-body); font-size: 12px; color: var(--wood-dark); background: var(--wood-cream); outline: none; cursor: pointer; }
+.btn-add { margin-left: auto; padding: 8px 16px; background: var(--wood-dark); color: var(--wood-pale); border: none; border-radius: 7px; font-family: var(--font-body); font-size: 12px; font-weight: 600; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px; }
+.btn-add:hover { background: var(--wood-mid); }
+.data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+.data-table th { background: var(--wood-cream); padding: 10px 14px; text-align: left; font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: var(--wood-mid); border-bottom: 1px solid var(--border); white-space: nowrap; }
+.data-table td { padding: 11px 14px; border-bottom: 1px solid rgba(217,201,179,0.5); color: var(--wood-dark); vertical-align: middle; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(232,213,183,0.2); }
+.data-table tr.cancelled td { text-decoration: line-through; color: var(--gray); }
+
+/* ── BADGES ── */
+.badge { display: inline-block; padding: 3px 9px; border-radius: 20px; font-size: 10.5px; font-weight: 600; white-space: nowrap; }
+.badge-not-started    { background: #F5EDD0; color: #6B5000; }
+.badge-pending-pay    { background: #FDEBD0; color: #784212; }
+.badge-pending-mat    { background: #E8DAEF; color: #4A235A; }
+.badge-in-production  { background: #D0E8FF; color: #003A6B; }
+.badge-ready          { background: #D0F0E8; color: #0A4A3A; }
+.badge-on-hold        { background: #E8E8E8; color: #4A4A4A; }
+.badge-cancelled      { background: #F0E0E0; color: #7A2020; }
+.badge-completed      { background: #E2EFE6; color: #2D5A2D; }
+
+/* ── ACTION BUTTONS ── */
+.btn-action { padding: 4px 10px; border-radius: 5px; font-size: 11px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--wood-white); color: var(--wood-mid); font-family: var(--font-body); transition: all 0.15s; margin-right: 4px; }
+.btn-action:hover { background: var(--wood-cream); }
+.btn-action.danger { color: var(--red); border-color: rgba(166,50,40,0.2); }
+.btn-action.danger:hover { background: #F9ECEB; }
+
+/* ── MODAL ── */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(3px); animation: fadeIn 0.15s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+.modal { background: var(--wood-white); border-radius: 14px; padding: 28px; width: 100%; max-width: 560px; max-height: 90vh; overflow-y: auto; box-shadow: 0 24px 60px rgba(0,0,0,0.35); animation: modalUp 0.2s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes modalUp { from { transform: translateY(20px) scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+.modal-title { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--wood-dark); margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--border); }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.form-grid .full { grid-column: 1 / -1; }
+.form-group label { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.2px; color: var(--wood-mid); margin-bottom: 5px; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--font-body); font-size: 13px; color: var(--wood-dark); background: var(--wood-cream); outline: none; transition: border-color 0.2s; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--wood-warm); }
+.form-group textarea { resize: vertical; min-height: 70px; }
+.modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+.btn-cancel { padding: 9px 18px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; background: var(--wood-cream); color: var(--wood-mid); transition: all 0.2s; }
+.btn-cancel:hover { background: var(--border); }
+.btn-save { padding: 9px 20px; background: var(--wood-dark); color: var(--wood-pale); border: none; border-radius: 7px; font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-save:hover { background: var(--wood-mid); }
+
+/* ── DASHBOARD ── */
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.dash-card { background: var(--wood-white); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
+.dash-card-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px; color: var(--gray); margin-bottom: 16px; }
+.month-picker { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--wood-dark); }
+.month-picker select { padding: 4px 8px; border: 1px solid var(--border); border-radius: 5px; background: var(--wood-cream); font-family: var(--font-body); font-size: 12px; outline: none; }
+.progress-bar-wrap { background: var(--wood-cream); border-radius: 20px; height: 8px; margin: 10px 0 6px; overflow: hidden; }
+.progress-bar { height: 100%; border-radius: 20px; background: var(--wood-light); transition: width 0.5s ease; }
+.progress-bar.over { background: var(--red); }
+.progress-bar.near { background: var(--grain); }
+.chart-bars { display: flex; align-items: flex-end; gap: 6px; height: 80px; margin-top: 8px; }
+.chart-bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+.chart-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--wood-light); transition: height 0.4s ease; min-height: 2px; }
+.chart-bar.expense { background: rgba(166,50,40,0.4); }
+.chart-bar-label { font-size: 9px; color: var(--gray); font-family: var(--font-mono); }
+.status-breakdown { display: flex; flex-direction: column; gap: 8px; }
+.status-row { display: flex; align-items: center; gap: 8px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-row-label { font-size: 12px; flex: 1; }
+.status-row-count { font-family: var(--font-mono); font-size: 12px; font-weight: 500; color: var(--gray); }
+.empty-state { text-align: center; padding: 48px 20px; color: var(--gray); }
+.empty-state p { margin-top: 8px; font-size: 13px; }
+
+/* ── TOAST ── */
+.toast { position: fixed; bottom: 24px; right: 24px; background: var(--wood-dark); color: var(--wood-pale); padding: 12px 18px; border-radius: 8px; font-size: 13px; font-weight: 500; box-shadow: 0 8px 24px var(--shadow-deep); z-index: 9999; animation: toastIn 0.3s cubic-bezier(0.34,1.56,0.64,1) both; }
+@keyframes toastIn { from { transform: translateY(20px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* ── SETTINGS TAB ── */
+.settings-section { background: var(--wood-white); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+.settings-section h3 { font-family: var(--font-display); font-size: 16px; margin-bottom: 16px; color: var(--wood-dark); padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+.setting-row { display: flex; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid rgba(217,201,179,0.4); flex-wrap: wrap; }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { flex: 1; min-width: 200px; }
+.setting-label strong { display: block; font-size: 13px; font-weight: 600; }
+.setting-label span { font-size: 11px; color: var(--gray); }
+.setting-input { padding: 7px 12px; border: 1.5px solid var(--border); border-radius: 7px; font-family: var(--font-body); font-size: 13px; background: var(--wood-cream); outline: none; width: 160px; }
+.setting-input:focus { border-color: var(--wood-warm); }
+
+@media (max-width: 640px) {
+  .topnav { padding: 0 12px; }
+  .nav-brand { font-size: 13px; }
+  .main { padding: 16px 12px; }
+  .form-grid { grid-template-columns: 1fr; }
+  .form-grid .full { grid-column: 1; }
+  .stat-grid { grid-template-columns: repeat(2, 1fr); }
+  .data-table { font-size: 11.5px; }
+  .data-table th, .data-table td { padding: 8px 10px; }
+  .sync-indicator { display: none; }
+}
+</style>
+</head>
+<body>
+
+
+<!-- SETUP SCREEN (first time only) -->
+<div id="setup-screen" style="display:none">
+  <div class="setup-box">
+    <div class="setup-logo">CJD Business Manager</div>
+    <div class="setup-sub">First-time Setup</div>
+    <div class="setup-desc">
+      Enter your Supabase credentials to connect your database. Find these in your Supabase project under <strong>Settings → API</strong>.
+    </div>
+    <label>Supabase Project URL</label>
+    <input type="text" id="setup-url" placeholder="https://xyzxyz.supabase.co">
+    <label>Supabase Anon/Public Key</label>
+    <input type="text" id="setup-key" placeholder="eyJ...">
+    <button class="btn-primary" onclick="saveSupabaseConfig()">Connect Database</button>
+    <div class="login-error" id="setup-error"></div>
+  </div>
+</div>
+
+<!-- LOGIN -->
+<div id="login-screen" style="display:none">
+  <div class="login-box">
+    <div class="login-logo">CJD Custom Wood<br>& Home Accessories</div>
+    <div class="login-sub">Business Manager</div>
+    <label>Who are you?</label>
+    <select id="login-user">
+      <option value="">Select...</option>
+    </select>
+    <label>PIN</label>
+    <input type="password" id="login-pin" placeholder="Enter PIN" maxlength="8" inputmode="numeric">
+    <button class="btn-primary" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Connecting to database…</div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <nav class="topnav">
+    <div class="nav-brand">CJD</div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="showTab('dashboard')" id="tab-dashboard">📊 Dashboard</button>
+      <button class="nav-tab" onclick="showTab('projects')" id="tab-projects">🪵 Projects</button>
+      <button class="nav-tab" onclick="showTab('clients')" id="tab-clients">👤 Clients</button>
+      <button class="nav-tab" onclick="showTab('expenses')" id="tab-expenses">💸 Expenses</button>
+      <button class="nav-tab" onclick="showTab('mileage')" id="tab-mileage">🚗 Mileage</button>
+      <button class="nav-tab" onclick="showTab('pl')" id="tab-pl">📈 P&amp;L</button>
+      <button class="nav-tab" onclick="showTab('bills')" id="tab-bills">🧾 Bills</button>
+      <button class="nav-tab" onclick="showTab('creditors')" id="tab-creditors">💳 Creditors</button>
+      <button class="nav-tab" onclick="showTab('medical')" id="tab-medical">🏥 Medical</button>
+      <button class="nav-tab" onclick="showTab('settings')" id="tab-settings">⚙️ Settings</button>
+    </div>
+    <div class="nav-user">
+      <div class="sync-indicator"><div class="sync-dot" id="sync-dot"></div><span id="sync-label">Synced</span></div>
+      <span class="nav-user-name" id="nav-user-name"></span>
+      <button class="btn-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="main">
+    <!-- DASHBOARD -->
+    <div id="tab-dashboard-content">
+      <div class="section-header">
+        <div class="section-title">Dashboard</div>
+        <div class="month-picker">Month:
+          <select id="dash-month" onchange="renderDashboard()"></select>
+          <select id="dash-year" onchange="renderDashboard()"></select>
+        </div>
+      </div>
+      <div class="stat-grid" id="dash-stats"></div>
+      <div class="dash-grid" id="dash-cards"></div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div id="tab-projects-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Projects</div>
+        <button class="btn-add" onclick="openProjectModal()">+ Add Project</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="Search client or description…" oninput="renderProjects()" id="proj-search">
+          <select class="filter-select" onchange="renderProjects()" id="proj-filter-status">
+            <option value="">All Statuses</option>
+            <option>Not Started</option><option>Pending Payment</option><option>Pending Materials</option>
+            <option>In Production</option><option>Ready for Install</option><option>On Hold</option>
+            <option>Cancelled</option><option>Job Completed</option>
+          </select>
+          <select class="filter-select" onchange="renderProjects()" id="proj-filter-type"><option value="">All Types</option></select>
+          <select class="filter-select" onchange="renderProjects()" id="proj-filter-assigned"><option value="">All Assigned</option></select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table"><thead><tr>
+            <th>#</th><th>Client</th><th>Description</th><th>Type</th><th>Assigned</th>
+            <th>Status</th><th>Price</th><th>Deposit</th><th>Dep. Month</th>
+            <th>Balance</th><th>Paid Month</th><th>Expenses</th><th>Profit</th><th>Actions</th>
+          </tr></thead><tbody id="proj-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CLIENTS -->
+    <div id="tab-clients-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Clients</div>
+        <button class="btn-add" onclick="openClientModal()">+ Add Client</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="Search clients…" oninput="renderClients()" id="client-search">
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table"><thead><tr>
+            <th>Name</th><th>Phone</th><th>Email</th><th>Projects</th><th>Total Value</th><th>Actions</th>
+          </tr></thead><tbody id="client-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- EXPENSES -->
+    <div id="tab-expenses-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Expense Log</div>
+        <button class="btn-add" onclick="openExpenseModal()">+ Add Expense</button>
+      </div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="Search expenses…" oninput="renderExpenses()" id="exp-search">
+          <select class="filter-select" onchange="renderExpenses()" id="exp-filter-cat">
+            <option value="">All Categories</option>
+            <option>Materials</option><option>Tools & Equipment</option><option>Shipping & Postage</option>
+            <option>Packaging</option><option>Marketing</option><option>Workspace / Utilities</option>
+            <option>Transportation</option><option>Other</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table"><thead><tr>
+            <th>Date</th><th>Project</th><th>Category</th><th>Description</th><th>Amount</th><th>Actions</th>
+          </tr></thead><tbody id="exp-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- P&L -->
+    <div id="tab-pl-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Profit & Loss</div>
+        <div class="month-picker">Year:
+          <select id="pl-year" onchange="renderPL()"></select>
+        </div>
+      </div>
+      <div class="stat-grid" id="pl-stats"></div>
+      <div class="table-wrap" style="margin-top:0">
+        <div style="overflow-x:auto">
+          <table class="data-table" id="pl-table">
+            <thead><tr>
+              <th>Month</th><th>Revenue</th><th>Expenses</th>
+              <th>Gross Profit</th><th>Margin</th><th>Mileage Deduction</th><th>Net After Mileage</th>
+            </tr></thead>
+            <tbody id="pl-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MILEAGE -->
+    <div id="tab-mileage-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Mileage Log</div>
+        <button class="btn-add" onclick="openMileageModal()">+ Add Trip</button>
+      </div>
+
+      <!-- Mileage summary cards -->
+      <div class="stat-grid" id="mileage-stats"></div>
+
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="Search trips…" oninput="renderMileage()" id="mil-search">
+          <select class="filter-select" onchange="renderMileage()" id="mil-filter-year">
+            <option value="">All Years</option>
+          </select>
+          <select class="filter-select" onchange="renderMileage()" id="mil-filter-purpose">
+            <option value="">All Purposes</option>
+            <option>Client Visit</option><option>Material Pickup</option>
+            <option>Delivery / Install</option><option>Shop / Supplies</option>
+            <option>Other Business</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table"><thead><tr>
+            <th>Date</th><th>From</th><th>To</th><th>Purpose</th><th>Project</th>
+            <th>Miles</th><th>Rate (¢/mi)</th><th>Deduction</th><th>Actions</th>
+          </tr></thead><tbody id="mil-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- BILLS -->
+    <div id="tab-bills-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Bills</div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <select class="filter-select" id="bills-month-view" onchange="renderBills()">
+            <option value="">All Bills</option>
+          </select>
+          <button class="btn-add" onclick="openBillModal()">+ Add Bill</button>
+        </div>
+      </div>
+      <div class="stat-grid" id="bills-stats"></div>
+      <div id="bills-alerts" style="margin-bottom:16px"></div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="Search bills…" oninput="renderBills()" id="bill-search">
+          <select class="filter-select" onchange="renderBills()" id="bill-filter-cat">
+            <option value="">All Categories</option>
+            <option>Housing</option><option>Utilities</option><option>Insurance</option>
+            <option>Subscriptions</option><option>Transportation</option><option>Phone</option>
+            <option>Internet</option><option>Medical</option><option>Debt</option><option>Other</option>
+          </select>
+          <select class="filter-select" onchange="renderBills()" id="bill-filter-who">
+            <option value="">All Payers</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table"><thead><tr>
+            <th>Bill</th><th>Category</th><th>Amount</th><th>Who Pays</th>
+            <th>Auto Pay</th><th>Due</th><th>Status</th><th>Last Paid</th><th>Actions</th>
+          </tr></thead><tbody id="bills-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- CREDITORS -->
+    <div id="tab-creditors-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Creditors & Debt Paydown</div>
+        <button class="btn-add" onclick="openCreditorModal()">+ Add Creditor</button>
+      </div>
+      <div class="stat-grid" id="creditor-stats"></div>
+      <div class="dash-grid" style="margin-bottom:24px">
+        <div class="dash-card" id="avalanche-card">
+          <div class="dash-card-title">💡 Avalanche Payoff Order <span style="font-weight:400;color:var(--gray)">(highest interest first)</span></div>
+          <div id="avalanche-list"></div>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <div style="overflow-x:auto">
+          <table class="data-table"><thead><tr>
+            <th>Creditor</th><th>Type</th><th>Balance</th><th>Interest Rate</th>
+            <th>Min Payment</th><th>Due Day</th><th>Total Paid</th><th>Actions</th>
+          </tr></thead><tbody id="creditors-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+    <!-- MEDICAL -->
+    <div id="tab-medical-content" style="display:none">
+      <div class="section-header">
+        <div class="section-title">Medical Records</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn-add" style="background:var(--blue);font-size:11px" onclick="showMedicalView('providers')">👨‍⚕️ Providers</button>
+          <button class="btn-add" onclick="openMedicalModal()">+ Log Visit</button>
+        </div>
+      </div>
+      <!-- Medical sub-nav -->
+      <div style="display:flex;gap:4px;margin-bottom:16px;background:var(--wood-cream);padding:4px;border-radius:8px;width:fit-content">
+        <button id="med-view-visits" onclick="showMedicalView('visits')" style="padding:6px 14px;border-radius:6px;border:none;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;background:var(--wood-dark);color:var(--wood-pale)">Visits</button>
+        <button id="med-view-providers" onclick="showMedicalView('providers')" style="padding:6px 14px;border-radius:6px;border:none;font-family:var(--font-body);font-size:12px;font-weight:600;cursor:pointer;background:transparent;color:var(--gray)">Providers</button>
+      </div>
+      <div id="med-visits-view">
+      <div class="stat-grid" id="medical-stats"></div>
+      <div class="dash-grid" style="margin-bottom:16px" id="deductible-cards"></div>
+      <div class="table-wrap">
+        <div class="table-toolbar">
+          <input class="search-input" placeholder="Search visits…" oninput="renderMedical()" id="med-search">
+          <select class="filter-select" onchange="renderMedical()" id="med-filter-person">
+            <option value="">All People</option>
+          </select>
+          <select class="filter-select" onchange="renderMedical()" id="med-filter-cat">
+            <option value="">All Categories</option>
+            <option>Medical</option><option>Dental</option><option>Vision</option><option>Other</option>
+          </select>
+          <select class="filter-select" onchange="renderMedical()" id="med-filter-year">
+            <option value="">All Years</option>
+            <option>2024</option><option>2025</option><option>2026</option><option>2027</option><option>2028</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="data-table"><thead><tr>
+            <th>Date</th><th>Person</th><th>Category</th><th>Provider</th>
+            <th>Reason</th><th>Copay</th><th>Amount Paid</th><th>Billed</th>
+            <th>Insurance Paid</th><th>Applied to Deductible</th><th>Actions</th>
+          </tr></thead><tbody id="medical-tbody"></tbody></table>
+        </div>
+      </div>
+    </div>
+
+
+    <!-- SETTINGS -->
+    <div id="tab-settings-content" style="display:none">
+      <div class="section-header"><div class="section-title">Settings</div></div>
+      <div class="settings-section">
+        <h3>Team Members & PINs</h3>
+        <div id="users-list"></div>
+        <button class="btn-add" style="margin-top:12px;margin-left:0" onclick="addUserRow()">+ Add Team Member</button>
+      </div>
+      <div class="settings-section">
+        <h3>Business Settings</h3>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Monthly Income Limit</strong><span>Used for dashboard progress bar</span></div>
+          <input type="number" class="setting-input" id="setting-limit" value="1650">
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>IRS Mileage Rate</strong><span>Cents per mile for tax deduction (2025 rate is 70¢)</span></div>
+          <div style="display:flex;align-items:center;gap:6px">
+            <input type="number" class="setting-input" id="setting-mileage-rate" value="70" min="1" max="200" style="width:80px"> ¢/mile
+          </div>
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Near-Limit Threshold</strong><span>% of limit to trigger warning</span></div>
+          <input type="number" class="setting-input" id="setting-threshold" value="90" min="1" max="100"> %
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Database Connection</h3>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Supabase URL</strong></div>
+          <input type="text" class="setting-input" id="setting-url" style="width:300px">
+        </div>
+        <div class="setting-row">
+          <div class="setting-label"><strong>Anon Key</strong></div>
+          <input type="text" class="setting-input" id="setting-key" style="width:300px">
+        </div>
+      </div>
+      <div class="settings-section">
+        <h3>Medical — People & Deductibles</h3>
+        <div style="font-size:12px;color:var(--gray);margin-bottom:12px">Set deductible amounts per person per year. These auto-calculate remaining balance as you log visits.</div>
+        <div id="deductible-settings-list"></div>
+        <button class="btn-add" style="margin-top:12px;margin-left:0" onclick="addDeductibleRow()">+ Add Person / Year</button>
+      </div>
+      <button class="btn-save" onclick="saveSettings()">Save All Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="modal-overlay" id="proj-modal" style="display:none" onclick="if(event.target===this)closeProjModal()">
+  <div class="modal">
+    <div class="modal-title" id="proj-modal-title">Add Project</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Client *</label><select id="pf-client"><option value="">Select client…</option></select></div>
+      <div class="form-group full"><label>Description *</label><textarea id="pf-desc" rows="2"></textarea></div>
+      <div class="form-group"><label>Product Type</label><input id="pf-type" list="type-list" placeholder="e.g. Shelving"><datalist id="type-list"></datalist></div>
+      <div class="form-group"><label>Assigned To</label><select id="pf-assigned"><option value="">Unassigned</option></select></div>
+      <div class="form-group"><label>Status</label>
+        <select id="pf-status">
+          <option>Not Started</option><option>Pending Payment</option><option>Pending Materials</option>
+          <option>In Production</option><option>Ready for Install</option><option>On Hold</option>
+          <option>Cancelled</option><option>Job Completed</option>
+        </select></div>
+      <div class="form-group"><label>Wave Invoice #</label><input id="pf-invoice" type="text"></div>
+      <div class="form-group"><label>Price ($)</label><input id="pf-price" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Deposit ($)</label><input id="pf-deposit" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Deposit Date</label><input id="pf-dep-date" type="date"></div>
+      <div class="form-group"><label>Date Paid (Final)</label><input id="pf-paid-date" type="date"></div>
+      <div class="form-group"><label>Wave ✓</label><select id="pf-wave"><option value="">—</option><option>✓</option></select></div>
+      <div class="form-group full"><label>Notes</label><textarea id="pf-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeProjModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProject()">Save Project</button>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENT MODAL -->
+<div class="modal-overlay" id="client-modal" style="display:none" onclick="if(event.target===this)closeClientModal()">
+  <div class="modal">
+    <div class="modal-title" id="client-modal-title">Add Client</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Full Name *</label><input id="cf-name"></div>
+      <div class="form-group"><label>Phone</label><input id="cf-phone" type="tel"></div>
+      <div class="form-group"><label>Email</label><input id="cf-email" type="email"></div>
+      <div class="form-group full"><label>Address</label><input id="cf-address"></div>
+      <div class="form-group full"><label>Notes</label><textarea id="cf-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeClientModal()">Cancel</button>
+      <button class="btn-save" onclick="saveClient()">Save Client</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-overlay" id="exp-modal" style="display:none" onclick="if(event.target===this)closeExpModal()">
+  <div class="modal">
+    <div class="modal-title" id="exp-modal-title">Add Expense</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date *</label><input id="ef-date" type="date"></div>
+      <div class="form-group"><label>Amount ($) *</label><input id="ef-amount" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="ef-category">
+          <option>Materials</option><option>Tools & Equipment</option><option>Shipping & Postage</option>
+          <option>Packaging</option><option>Marketing</option><option>Workspace / Utilities</option>
+          <option>Transportation</option><option>Other</option>
+        </select></div>
+      <div class="form-group"><label>Project (optional)</label><select id="ef-project"><option value="">—</option></select></div>
+      <div class="form-group full"><label>Description</label><input id="ef-desc"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeExpModal()">Cancel</button>
+      <button class="btn-save" onclick="saveExpense()">Save Expense</button>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG & STATE
+// ══════════════════════════════════════════════
+let sb = null; // Supabase client
+let currentUser = null;
+let editingId = null;
+let appData = { projects: [], clients: [], expenses: [], mileage: [], settings: null, bills: [], billPayments: [], creditors: [], creditorPayments: [], medicalVisits: [], deductibles: [], providers: [], appointments: [] };
+let realtimeChannel = null;
+const TABS = ['dashboard','projects','clients','expenses','mileage','pl','bills','creditors','medical','settings'];
+const _suppressRefresh = {};
+const _refreshTimers = {};
+let editingPaymentId = null;
+let payingBillId = null;
+let payingCreditorId = null;
+
+
+const DEFAULT_SETTINGS = {
+  users: [
+    { key: 'owner', name: 'Owner', pin: '1234', role: 'admin' },
+    { key: 'team1', name: 'Team Member 1', pin: '1111', role: 'member' },
+    { key: 'team2', name: 'Team Member 2', pin: '2222', role: 'member' },
+  ],
+  monthly_limit: 1650,
+  near_threshold: 90,
+  mileage_rate: 70,
+};
+
+// ══════════════════════════════════════════════
+// BOOT
+// ══════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', async () => {
+  const url = 'https://hcezneurpfkfryjiysnp.supabase.co';
+  const key = 'sb_publishable_AySQ3fGDY3loOt_jZwLiyw_qDFym5IX';
+  if (!url || !key) {
+    hideLoading();
+    document.getElementById('setup-screen').style.display = 'flex';
+    return;
+  }
+  await connectSupabase(url, key);
+});
+
+async function connectSupabase(url, key) {
+  // Show a lightweight status — not the full blocking spinner
+  document.getElementById('loading-text').textContent = 'Loading your data…';
+  document.getElementById('loading-overlay').style.display = 'flex';
+  try {
+    sb = supabase.createClient(url, key);
+    await loadAllData();
+    setupRealtime();
+    document.getElementById('loading-overlay').style.display = 'none';
+    // Restore session if user was previously logged in
+    const savedSession = localStorage.getItem('cjd_session');
+    if (savedSession) {
+      try {
+        currentUser = JSON.parse(savedSession);
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('nav-user-name').textContent = currentUser.name;
+        initApp();
+      } catch(e) {
+        localStorage.removeItem('cjd_session');
+        showLoginScreen();
+      }
+    } else {
+      showLoginScreen();
+    }
+  } catch (e) {
+    document.getElementById('loading-overlay').style.display = 'none';
+    console.error(e);
+    document.getElementById('setup-screen').style.display = 'flex';
+    document.getElementById('setup-error').textContent = 'Could not connect. Check your URL and key.';
+  }
+}
+
+async function loadAllData() {
+  // Initial load only — no spinner after first boot
+  const [projRes, clientRes, expRes, settRes, milRes, billsRes, billPayRes, credRes, credPayRes, medRes, dedRes, provRes, apptRes] = await Promise.all([
+    sb.from('projects').select('*').order('created_at', { ascending: false }),
+    sb.from('clients').select('*').order('name'),
+    sb.from('expenses').select('*').order('date', { ascending: false }),
+    sb.from('settings').select('*').limit(1),
+    sb.from('mileage').select('*').order('date', { ascending: false }),
+    sb.from('bills').select('*').order('name'),
+    sb.from('bill_payments').select('*').order('paid_date', { ascending: false }),
+    sb.from('creditors').select('*').order('current_balance', { ascending: false }),
+    sb.from('creditor_payments').select('*').order('paid_date', { ascending: false }),
+    sb.from('medical_visits').select('*').order('visit_date', { ascending: false }),
+    sb.from('deductible_settings').select('*'),
+    sb.from('providers').select('*').order('name'),
+    sb.from('appointments').select('*').order('appointment_date', { ascending: false }),
+  ]);
+  appData.projects  = dedup(projRes.data   || []);
+  appData.clients   = dedup(clientRes.data || []);
+  appData.expenses  = dedup(expRes.data    || []);
+  appData.settings  = settRes.data?.[0] || null;
+  appData.mileage   = dedup(milRes.data    || []);
+  appData.bills           = dedup(billsRes.data         || []);
+  appData.billPayments    = dedup(billPayRes.data        || []);
+  appData.creditors       = dedup(credRes.data           || []);
+  appData.creditorPayments= dedup(credPayRes.data        || []);
+  // Dedup medical visits by person+date+provider to catch any DB-level duplicates
+  const rawMed = medRes.data || [];
+  const medSeen = new Set();
+  appData.medicalVisits = rawMed.filter(v => {
+    const key = (v.person||'')+'|'+(v.visit_date||'')+'|'+(v.provider||'')+'|'+(v.amount_paid||'');
+    if (medSeen.has(key)) return false;
+    medSeen.add(key); return true;
+  });
+  appData.deductibles     = dedupBy(dedRes.data          || [], r => r.person+'_'+r.year);
+  appData.providers       = dedup(provRes.data           || []);
+  appData.appointments    = dedup(apptRes.data           || []);
+  if (!appData.settings) {
+    const { data } = await sb.from('settings').insert([{ data: DEFAULT_SETTINGS }]).select().single();
+    appData.settings = data;
+  }
+}
+
+async function _doRefreshTable(table) {
+  try {
+    if (table === 'projects') {
+      const { data } = await sb.from('projects').select('*').order('created_at', { ascending: false });
+      appData.projects = mergeData(data||[], appData.projects);
+    } else if (table === 'clients') {
+      const { data } = await sb.from('clients').select('*').order('name');
+      appData.clients = mergeData(data||[], appData.clients);
+    } else if (table === 'expenses') {
+      const { data } = await sb.from('expenses').select('*').order('date', { ascending: false });
+      appData.expenses = mergeData(data||[], appData.expenses);
+    } else if (table === 'mileage') {
+      const { data } = await sb.from('mileage').select('*').order('date', { ascending: false });
+      appData.mileage = mergeData(data||[], appData.mileage);
+    } else if (table === 'bills') {
+      const { data } = await sb.from('bills').select('*').order('name');
+      appData.bills = mergeData(data||[], appData.bills);
+    } else if (table === 'bill_payments') {
+      const { data } = await sb.from('bill_payments').select('*').order('paid_date', { ascending: false });
+      appData.billPayments = mergeData(data||[], appData.billPayments);
+    } else if (table === 'creditors') {
+      const { data } = await sb.from('creditors').select('*').order('current_balance', { ascending: false });
+      appData.creditors = mergeData(data||[], appData.creditors);
+    } else if (table === 'creditor_payments') {
+      const { data } = await sb.from('creditor_payments').select('*').order('paid_date', { ascending: false });
+      appData.creditorPayments = mergeData(data||[], appData.creditorPayments);
+    } else if (table === 'medical_visits') {
+      const { data } = await sb.from('medical_visits').select('*').order('visit_date', { ascending: false });
+      appData.medicalVisits = mergeData(data||[], appData.medicalVisits);
+    } else if (table === 'providers') {
+      const { data } = await sb.from('providers').select('*').order('name');
+      appData.providers = mergeData(data||[], appData.providers);
+    } else if (table === 'appointments') {
+      const { data } = await sb.from('appointments').select('*').order('appointment_date', { ascending: false });
+      appData.appointments = mergeData(data||[], appData.appointments);
+    }
+    // Re-render current tab silently (no spinner)
+    const activeTab = document.querySelector('.nav-tab.active')?.id?.replace('tab-','');
+    if (activeTab === 'dashboard') renderDashboard();
+    if (activeTab === 'projects') renderProjects();
+    if (activeTab === 'clients') renderClients();
+    if (activeTab === 'expenses') renderExpenses();
+    if (activeTab === 'mileage') renderMileage();
+    if (activeTab === 'bills') renderBills();
+    if (activeTab === 'creditors') renderCreditors();
+    if (activeTab === 'medical') renderMedical();
+    if (activeTab === 'providers') renderProviders();
+  } catch(e) { console.warn('Realtime refresh error:', e); }
+}
+
+function initApp() {
+  const dm = document.getElementById('dash-month');
+  const dy = document.getElementById('dash-year');
+  const now = new Date();
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  if (!dm.options.length) {
+    months.forEach((m,i) => { const o=document.createElement('option'); o.value=i+1; o.textContent=m; if(i===now.getMonth())o.selected=true; dm.appendChild(o); });
+    for(let y=2023; y<=2028; y++) { const o=document.createElement('option'); o.value=y; o.textContent=y; if(y===now.getFullYear())o.selected=true; dy.appendChild(o); }
+  }
+  renderDashboard();
+}
+
+function fmt$(n) { if(n===null||n===undefined||n==='') return '—'; return '$'+Number(n).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ══════════════════════════════════════════════
+// DASHBOARD
+// ══════════════════════════════════════════════
+function renderDashboard() {
+  const {projects, expenses, mileage} = appData;
+  const s = getSettings();
+  const LIMIT = s.monthly_limit || 1650;
+  const THRESHOLD = (s.near_threshold || 90) / 100;
+  const rate = getMileageRate();
+  const month = +(document.getElementById('dash-month')?.value || new Date().getMonth()+1);
+  const year  = +(document.getElementById('dash-year')?.value  || new Date().getFullYear());
+
+  // Cash basis: deposits count when received, balance counts when final payment received
+  function cashRevForPeriod(p, filterFn) {
+    let r = 0;
+    if (p.deposit && p.deposit_date && filterFn(p.deposit_date)) r += +p.deposit||0;
+    if (p.paid_date && filterFn(p.paid_date)) r += (+p.price||0) - (+p.deposit||0);
+    return r;
+  }
+  const monthFilter = d => { const dt=new Date(d+'T12:00:00'); return dt.getMonth()+1===month&&dt.getFullYear()===year; };
+  const yearFilter  = d => new Date(d+'T12:00:00').getFullYear()===year;
+  const monthRevenue  = projects.filter(p=>p.status!=='Cancelled').reduce((s,p)=>s+cashRevForPeriod(p,monthFilter),0);
+  const monthExp      = expenses.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getMonth()+1===month&&d.getFullYear()===year;}).reduce((s,e)=>s+(+e.amount||0),0);
+  const monthMileDed  = mileage.filter(m=>{const d=new Date(m.date+'T12:00:00');return d.getMonth()+1===month&&d.getFullYear()===year;}).reduce((s,m)=>s+(+m.miles||0),0) * rate;
+  const inProd        = projects.filter(p=>p.status==='In Production').reduce((s,p)=>s+(+p.price||0),0);
+  const pending       = projects.filter(p=>['Not Started','Pending Payment','Pending Materials'].includes(p.status)).reduce((s,p)=>s+(+p.price||0),0);
+  const remaining     = LIMIT - monthRevenue;
+  const monthProfit   = monthRevenue - monthExp;
+  const ytdRevenue    = projects.filter(p=>p.status!=='Cancelled').reduce((s,p)=>s+cashRevForPeriod(p,yearFilter),0);
+  const ytdExp        = expenses.filter(e=>new Date(e.date+'T12:00:00').getFullYear()===year).reduce((s,e)=>s+(+e.amount||0),0);
+  const ytdMileDed    = mileage.filter(m=>new Date(m.date+'T12:00:00').getFullYear()===year).reduce((s,m)=>s+(+m.miles||0),0) * rate;
+  const ytdProfit     = ytdRevenue - ytdExp;
+
+  document.getElementById('dash-stats').innerHTML = `
+    <div class="stat-card green"><div class="stat-label">Revenue This Month</div><div class="stat-value">${fmt$(monthRevenue)}</div><div class="stat-sub">of ${fmt$(LIMIT)} limit</div></div>
+    <div class="stat-card"><div class="stat-label">Expenses This Month</div><div class="stat-value">${fmt$(monthExp)}</div></div>
+    <div class="stat-card ${monthProfit>=0?'green':'red'}"><div class="stat-label">Profit This Month</div><div class="stat-value">${fmt$(monthProfit)}</div><div class="stat-sub">excl. mileage deduction</div></div>
+    <div class="stat-card ${remaining<0?'red':'accent'}"><div class="stat-label">Remaining This Month</div><div class="stat-value">${fmt$(remaining)}</div></div>
+    <div class="stat-card green"><div class="stat-label">YTD Revenue</div><div class="stat-value">${fmt$(ytdRevenue)}</div></div>
+    <div class="stat-card"><div class="stat-label">YTD Expenses</div><div class="stat-value">${fmt$(ytdExp)}</div></div>
+    <div class="stat-card ${ytdProfit>=0?'green':'red'}"><div class="stat-label">YTD Profit</div><div class="stat-value">${fmt$(ytdProfit)}</div><div class="stat-sub">excl. mileage deduction</div></div>
+    <div class="stat-card blue"><div class="stat-label">YTD Mileage Deduction</div><div class="stat-value">${fmt$(ytdMileDed)}</div><div class="stat-sub">tax deduction (separate)</div></div>
+  `;
+
+  const pct = Math.min((monthRevenue/LIMIT)*100,100);
+  const barCls = monthRevenue>LIMIT?'over':monthRevenue>LIMIT*THRESHOLD?'near':'';
+  const statusColors = {'Not Started':'#C49A6C','Pending Payment':'#E8956A','Pending Materials':'#9B72B0','In Production':'#6AABDC','Ready for Install':'#6ABDA0','On Hold':'#AAAAAA','Cancelled':'#DC6A6A','Job Completed':'#6AAF80'};
+  const statusCounts = {};
+  projects.forEach(p=>{const s=p.status||'Not Started';statusCounts[s]=(statusCounts[s]||0)+1;});
+
+  // Top 5 most profitable completed projects
+  const topProjects = projects
+    .filter(p=>p.price&&p.status!=='Cancelled')
+    .map(p=>{
+      const projExp = expenses.filter(e=>e.project_id===p.id).reduce((s,e)=>s+(+e.amount||0),0);
+      return {...p, profit: (+p.price||0)-projExp, expenses: projExp};
+    })
+    .sort((a,b)=>b.profit-a.profit)
+    .slice(0,5);
+
+  const chartMonths = [];
+  for(let i=5;i>=0;i--) {
+    const d=new Date(year,month-1-i,1); const m2=d.getMonth()+1; const y2=d.getFullYear();
+    const mf = dt => { const dd=new Date(dt+'T12:00:00'); return dd.getMonth()+1===m2&&dd.getFullYear()===y2; };
+    const rev=projects.filter(p=>p.status!=='Cancelled').reduce((s,p)=>s+cashRevForPeriod(p,mf),0);
+    const exp=expenses.filter(e=>{const dd=new Date(e.date+'T12:00:00');return dd.getMonth()+1===m2&&dd.getFullYear()===y2;}).reduce((s,e)=>s+(+e.amount||0),0);
+    const profit=rev-exp;
+    chartMonths.push({label:d.toLocaleDateString('en-US',{month:'short'}),rev,exp,profit});
+  }
+  const maxVal=Math.max(...chartMonths.map(m=>Math.max(m.rev,m.exp)),1);
+
+  document.getElementById('dash-cards').innerHTML = `
+    <div class="dash-card">
+      <div class="dash-card-title">Monthly Limit Progress</div>
+      <div style="font-size:28px;font-family:var(--font-display);font-weight:700">${fmt$(monthRevenue)}</div>
+      <div class="progress-bar-wrap"><div class="progress-bar ${barCls}" style="width:${pct}%"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray)"><span>${Math.round(pct)}% of limit</span><span>Limit: ${fmt$(LIMIT)}</span></div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Projects by Status</div>
+      <div class="status-breakdown">${Object.entries(statusCounts).map(([s,c])=>`<div class="status-row"><div class="status-dot" style="background:${statusColors[s]||'#ccc'}"></div><div class="status-row-label">${esc(s)}</div><div class="status-row-count">${c}</div></div>`).join('')||'<div style="color:var(--gray);font-size:12px">No projects yet</div>'}</div>
+    </div>
+    <div class="dash-card">
+      <div class="dash-card-title">Revenue vs Expenses — Last 6 Months</div>
+      <div class="chart-bars">${chartMonths.map(m=>`<div class="chart-bar-wrap"><div class="chart-bar" style="height:${Math.round((m.rev/maxVal)*70)}px" title="Revenue: ${fmt$(m.rev)}"></div><div class="chart-bar expense" style="height:${Math.round((m.exp/maxVal)*70)}px" title="Expenses: ${fmt$(m.exp)}"></div><div class="chart-bar-label">${m.label}</div></div>`).join('')}</div>
+      <div style="display:flex;gap:16px;margin-top:10px;font-size:11px;color:var(--gray)">
+        <span><span style="display:inline-block;width:10px;height:10px;background:var(--wood-light);border-radius:2px;margin-right:4px"></span>Revenue</span>
+        <span><span style="display:inline-block;width:10px;height:10px;background:rgba(166,50,40,0.4);border-radius:2px;margin-right:4px"></span>Expenses</span>
+      </div>
+    </div>
+    <div class="dash-card" style="grid-column:1/-1">
+      <div class="dash-card-title">Top Profitable Projects (Completed)</div>
+      ${topProjects.length ? `<table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="border-bottom:1px solid var(--border)">
+          <th style="text-align:left;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Project</th>
+          <th style="text-align:right;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Revenue</th>
+          <th style="text-align:right;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Expenses</th>
+          <th style="text-align:right;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Profit</th>
+          <th style="text-align:right;padding:6px 8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Margin</th>
+        </tr></thead>
+        <tbody>${topProjects.map(p=>{
+          const margin=p.price?(p.profit/+p.price*100):0;
+          return `<tr style="border-bottom:1px solid rgba(217,201,179,0.4)">
+            <td style="padding:8px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(p.description||p.product_type||'—')}</td>
+            <td style="padding:8px;text-align:right;font-family:var(--font-mono)">${fmt$(p.price)}</td>
+            <td style="padding:8px;text-align:right;font-family:var(--font-mono);color:var(--red)">${fmt$(p.expenses)}</td>
+            <td style="padding:8px;text-align:right;font-family:var(--font-mono);font-weight:700;color:${p.profit>=0?'var(--green)':'var(--red)'}">${fmt$(p.profit)}</td>
+            <td style="padding:8px;text-align:right;font-family:var(--font-mono);color:${margin>=50?'var(--green)':margin>=25?'var(--yellow)':'var(--red)'}">${margin.toFixed(0)}%</td>
+          </tr>`;
+        }).join('')}</tbody>
+      </table>` : '<div style="color:var(--gray);font-size:12px;padding:8px">No completed projects yet</div>'}
+    </div>
+  `;
+}
+
+function renderProjects() {
+  const {projects, clients} = appData;
+  const search=(document.getElementById('proj-search')?.value||'').toLowerCase();
+  const statusF=document.getElementById('proj-filter-status')?.value||'';
+  const typeF=document.getElementById('proj-filter-type')?.value||'';
+  const assignedF=document.getElementById('proj-filter-assigned')?.value||'';
+  const clientMap={};clients.forEach(c=>clientMap[c.id]=c.name);
+
+  // Populate type filter
+  const types=[...new Set(projects.map(p=>p.product_type).filter(Boolean))];
+  const typesSel=document.getElementById('proj-filter-type');
+  const curType=typesSel.value;
+  typesSel.innerHTML='<option value="">All Types</option>'+types.map(t=>`<option${t===curType?' selected':''}>${esc(t)}</option>`).join('');
+
+  // Populate assigned filter
+  const users=getUsers();
+  const assignedSel=document.getElementById('proj-filter-assigned');
+  const curAssigned=assignedSel.value;
+  assignedSel.innerHTML='<option value="">All Assigned</option>'+users.map(u=>`<option${u.name===curAssigned?' selected':''}>${esc(u.name)}</option>`).join('');
+
+  // Populate product type datalist
+  document.getElementById('type-list').innerHTML=types.map(t=>`<option value="${esc(t)}">`).join('');
+
+  // Populate assigned dropdown in modal
+  document.getElementById('pf-assigned').innerHTML='<option value="">Unassigned</option>'+users.map(u=>`<option>${esc(u.name)}</option>`).join('');
+
+  const rows=projects.filter(p=>{
+    const cn=clientMap[p.client_id]||'';
+    if(search&&!cn.toLowerCase().includes(search)&&!(p.description||'').toLowerCase().includes(search))return false;
+    if(statusF&&p.status!==statusF)return false;
+    if(typeF&&p.product_type!==typeF)return false;
+    if(assignedF&&p.assigned_to!==assignedF)return false;
+    return true;
+  });
+
+  const tbody=document.getElementById('proj-tbody');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="12"><div class="empty-state"><div style="font-size:32px">🪵</div><p>No projects found</p></div></td></tr>`;return;}
+
+  tbody.innerHTML=rows.map((p,i)=>{
+    const bal=(+p.price||0)-(+p.deposit||0);
+    const projExp=appData.expenses.filter(e=>e.project_id===p.id).reduce((s,e)=>s+(+e.amount||0),0);
+    const profit=p.price?(+p.price||0)-projExp:null;
+    return `<tr class="${p.status==='Cancelled'?'cancelled':''}">
+      <td style="font-family:var(--font-mono);color:var(--gray)">${i+1}</td>
+      <td><strong>${esc(clientMap[p.client_id]||'—')}</strong></td>
+      <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(p.description)}">${esc(p.description)||'—'}</td>
+      <td>${esc(p.product_type)||'—'}</td>
+      <td>${esc(p.assigned_to)||'—'}</td>
+      <td>${statusBadge(p.status)}</td>
+      <td style="font-family:var(--font-mono)">${fmt$(p.price)}</td>
+      <td style="font-family:var(--font-mono)">${fmt$(p.deposit)}</td>
+      <td style="font-size:11px;color:var(--gray)">${p.deposit_date?fmtMonth(p.deposit_date):'—'}</td>
+      <td style="font-family:var(--font-mono);color:${bal>0?'var(--accent)':'var(--green)'}">${p.price?fmt$(bal):'—'}</td>
+      <td style="font-size:11px;color:var(--gray)">${p.paid_date?fmtMonth(p.paid_date):'—'}</td>
+      <td style="font-family:var(--font-mono);color:var(--red)">${projExp?fmt$(projExp):'—'}</td>
+      <td style="font-family:var(--font-mono);font-weight:600;color:${profit===null?'var(--gray)':profit>=0?'var(--green)':'var(--red)'}">${profit!==null?fmt$(profit):'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-action" onclick="editProject('${p.id}')">Edit</button>
+        <button class="btn-action danger" onclick="deleteProject('${p.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openProjectModal(id) {
+  editingId=id||null;
+  const {clients}=appData;
+  const cfSel=document.getElementById('pf-client');
+  cfSel.innerHTML='<option value="">Select client…</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+  document.getElementById('proj-modal-title').textContent=id?'Edit Project':'Add Project';
+  ['pf-desc','pf-type','pf-invoice','pf-price','pf-deposit','pf-dep-date','pf-paid-date','pf-notes'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('pf-client').value='';
+  document.getElementById('pf-status').value='Not Started';
+  document.getElementById('pf-wave').value='';
+  document.getElementById('pf-assigned').value='';
+  if(id){
+    const p=appData.projects.find(x=>x.id===id);
+    if(p){
+      document.getElementById('pf-client').value=p.client_id||'';
+      document.getElementById('pf-desc').value=p.description||'';
+      document.getElementById('pf-type').value=p.product_type||'';
+      document.getElementById('pf-assigned').value=p.assigned_to||'';
+      document.getElementById('pf-status').value=p.status||'Not Started';
+      document.getElementById('pf-invoice').value=p.wave_invoice||'';
+      document.getElementById('pf-price').value=p.price||'';
+      document.getElementById('pf-deposit').value=p.deposit||'';
+      document.getElementById('pf-dep-date').value=p.deposit_date||'';
+      document.getElementById('pf-paid-date').value=p.paid_date||'';
+      document.getElementById('pf-wave').value=p.wave_check||'';
+      document.getElementById('pf-notes').value=p.notes||'';
+    }
+  }
+  document.getElementById('proj-modal').style.display='flex';
+}
+
+async function saveProject(){
+  const clientId=document.getElementById('pf-client').value;
+  if(!clientId){alert('Please select a client.');return;}
+  const row={
+    client_id:clientId, description:document.getElementById('pf-desc').value.trim(),
+    product_type:document.getElementById('pf-type').value.trim(),
+    assigned_to:document.getElementById('pf-assigned').value,
+    status:document.getElementById('pf-status').value,
+    wave_invoice:document.getElementById('pf-invoice').value.trim(),
+    price:document.getElementById('pf-price').value||null,
+    deposit:document.getElementById('pf-deposit').value||null,
+    deposit_date:document.getElementById('pf-dep-date').value||null,
+    paid_date:document.getElementById('pf-paid-date').value||null,
+    wave_check:document.getElementById('pf-wave').value,
+    notes:document.getElementById('pf-notes').value.trim(),
+    updated_by:currentUser.name,
+  };
+  // Optimistic update — close modal instantly, sync in background
+  const tempId = editingId || ('temp_' + Date.now());
+  if(editingId){
+    const idx=appData.projects.findIndex(p=>p.id===editingId);
+    if(idx>=0)appData.projects[idx]={...appData.projects[idx],...row};
+  } else {
+    appData.projects.unshift({id:tempId, created_at:new Date().toISOString(), ...row});
+  }
+  closeProjModal(); renderProjects(); toast(editingId?'Project updated ✓':'Project added ✓');
+  try {
+    if(editingId){
+      const updated=await dbUpdate('projects',editingId,row);
+      // Confirm local state matches DB
+      const idx=appData.projects.findIndex(p=>p.id===editingId);
+      if(idx>=0) appData.projects[idx]={...appData.projects[idx],...updated};
+    } else {
+      const created=await dbInsert('projects',row);
+      appData.projects=appData.projects.filter(p=>p.id!==tempId);
+      appData.projects.unshift(created);
+    }
+  } catch(e){ console.error(e); toast('Sync error — check connection'); setSyncErr(); }
+}
+
+function renderClients(){
+  const {clients,projects}=appData;
+  const search=(document.getElementById('client-search')?.value||'').toLowerCase();
+  const rows=clients.filter(c=>!search||c.name.toLowerCase().includes(search));
+  const tbody=document.getElementById('client-tbody');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div style="font-size:32px">👤</div><p>No clients yet</p></div></td></tr>`;return;}
+  tbody.innerHTML=rows.map(c=>{
+    const cp=projects.filter(p=>p.client_id===c.id);
+    const total=cp.reduce((s,p)=>s+(+p.price||0),0);
+    return `<tr>
+      <td><strong>${esc(c.name)}</strong></td>
+      <td>${esc(c.phone)||'—'}</td><td>${esc(c.email)||'—'}</td>
+      <td><span style="font-family:var(--font-mono)">${cp.length}</span></td>
+      <td style="font-family:var(--font-mono)">${total?fmt$(total):'—'}</td>
+      <td><button class="btn-action" onclick="editClient('${c.id}')">Edit</button><button class="btn-action danger" onclick="deleteClient('${c.id}')">Delete</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function openClientModal(id){
+  editingId=id||null;
+  document.getElementById('client-modal-title').textContent=id?'Edit Client':'Add Client';
+  ['cf-name','cf-phone','cf-email','cf-address','cf-notes'].forEach(f=>document.getElementById(f).value='');
+  if(id){const c=appData.clients.find(x=>x.id===id);if(c){document.getElementById('cf-name').value=c.name||'';document.getElementById('cf-phone').value=c.phone||'';document.getElementById('cf-email').value=c.email||'';document.getElementById('cf-address').value=c.address||'';document.getElementById('cf-notes').value=c.notes||'';}}
+  document.getElementById('client-modal').style.display='flex';
+}
+
+async function saveClient(){
+  const name=document.getElementById('cf-name').value.trim();
+  if(!name){alert('Client name is required.');return;}
+  const row={name,phone:document.getElementById('cf-phone').value.trim(),email:document.getElementById('cf-email').value.trim(),address:document.getElementById('cf-address').value.trim(),notes:document.getElementById('cf-notes').value.trim()};
+  // Optimistic update — close modal instantly, sync in background
+  const tempId = editingId || ('temp_' + Date.now());
+  if(editingId){
+    const idx=appData.clients.findIndex(c=>c.id===editingId);
+    if(idx>=0)appData.clients[idx]={...appData.clients[idx],...row};
+  } else {
+    appData.clients.push({id:tempId, created_at:new Date().toISOString(), ...row});
+    appData.clients.sort((a,b)=>a.name.localeCompare(b.name));
+  }
+  closeClientModal(); renderClients(); toast(editingId?'Client updated ✓':'Client added ✓');
+  try {
+    if(editingId){ const u=await dbUpdate('clients',editingId,row); const idx=appData.clients.findIndex(c=>c.id===editingId); if(idx>=0) appData.clients[idx]={...appData.clients[idx],...u}; }
+    else {
+      const c=await dbInsert('clients',row);
+      appData.clients=appData.clients.filter(cl=>cl.id!==tempId);
+      appData.clients.push(c);
+      appData.clients.sort((a,b)=>a.name.localeCompare(b.name));
+    }
+  } catch(e){ toast('Sync error — check connection'); setSyncErr(); }
+}
+
+function openExpenseModal(id){
+  editingId=id||null;
+  const {projects}=appData;
+  document.getElementById('ef-project').innerHTML='<option value="">—</option>'+projects.map(p=>`<option value="${p.id}">${esc(p.description||p.product_type||'Project')}</option>`).join('');
+  document.getElementById('exp-modal-title').textContent=id?'Edit Expense':'Add Expense';
+  ['ef-desc'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('ef-amount').value='';
+  document.getElementById('ef-category').value='Materials';
+  document.getElementById('ef-project').value='';
+  if(!id)document.getElementById('ef-date').value=new Date().toISOString().split('T')[0];
+  if(id){const e=appData.expenses.find(x=>x.id===id);if(e){document.getElementById('ef-date').value=e.date||'';document.getElementById('ef-amount').value=e.amount||'';document.getElementById('ef-category').value=e.category||'Materials';document.getElementById('ef-project').value=e.project_id||'';document.getElementById('ef-desc').value=e.description||'';}}
+  document.getElementById('exp-modal').style.display='flex';
+}
+
+async function saveExpense(){
+  const date=document.getElementById('ef-date').value;
+  const amount=document.getElementById('ef-amount').value;
+  if(!date||!amount){alert('Date and amount are required.');return;}
+  const row={date,amount:parseFloat(amount),category:document.getElementById('ef-category').value,project_id:document.getElementById('ef-project').value||null,description:document.getElementById('ef-desc').value.trim()};
+  // Optimistic update — close modal instantly, sync in background
+  const tempId = editingId || ('temp_' + Date.now());
+  if(editingId){
+    const idx=appData.expenses.findIndex(e=>e.id===editingId);
+    if(idx>=0)appData.expenses[idx]={...appData.expenses[idx],...row};
+  } else {
+    appData.expenses.unshift({id:tempId, created_at:new Date().toISOString(), ...row});
+  }
+  closeExpModal(); renderExpenses(); toast(editingId?'Expense updated ✓':'Expense logged ✓');
+  try{
+    if(editingId){ const u=await dbUpdate('expenses',editingId,row); const idx=appData.expenses.findIndex(e=>e.id===editingId); if(idx>=0) appData.expenses[idx]={...appData.expenses[idx],...u}; }
+    else {
+      const e=await dbInsert('expenses',row);
+      appData.expenses=appData.expenses.filter(ex=>ex.id!==tempId);
+      appData.expenses.unshift(e);
+    }
+  }catch(e){ toast('Sync error — check connection'); setSyncErr(); }
+}
+
+function renderUsersList(){
+  const users=getUsers();
+  document.getElementById('users-list').innerHTML=users.map((u,i)=>`
+    <div class="setting-row" id="user-row-${i}">
+      <div style="display:flex;gap:8px;flex:1;flex-wrap:wrap">
+        <input class="setting-input" style="width:140px" placeholder="Name" value="${esc(u.name)}" id="uname-${i}">
+        <input class="setting-input" style="width:80px" placeholder="PIN" type="password" value="${esc(u.pin)}" id="upin-${i}" title="Show PIN">
+        <select class="setting-input" style="width:100px" id="urole-${i}">
+          <option${u.role==='admin'?' selected':''}>admin</option>
+          <option${u.role==='member'?' selected':''}>member</option>
+        </select>
+      </div>
+      ${i>0?`<button class="btn-action danger" onclick="removeUserRow(${i})">Remove</button>`:'<span style="font-size:11px;color:var(--gray)">Owner</span>'}
+    </div>`).join('');
+}
+
+function renderPL() {
+  const {projects, expenses, mileage} = appData;
+  const rate = getMileageRate();
+  const now = new Date();
+
+  // Populate year picker
+  const ySel = document.getElementById('pl-year');
+  if (ySel) {
+    const allYears = [...new Set([
+      ...projects.filter(p=>p.paid_date).map(p=>p.paid_date.slice(0,4)),
+      ...expenses.map(e=>e.date?.slice(0,4)),
+      now.getFullYear().toString()
+    ].filter(Boolean))].sort().reverse();
+    const curY = ySel.value || now.getFullYear().toString();
+    ySel.innerHTML = allYears.map(y=>`<option${y===curY?' selected':''}>${y}</option>`).join('');
+  }
+
+  const year = +(document.getElementById('pl-year')?.value || now.getFullYear());
+  const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+  let totalRev=0, totalExp=0, totalMile=0;
+  const rows = MONTHS.map((mName, mi) => {
+    const m = mi+1;
+    const plFilter = dt => { const d=new Date(dt+'T12:00:00'); return d.getMonth()+1===m&&d.getFullYear()===year; };
+    const rev = projects.filter(p=>p.status!=='Cancelled').reduce((s,p)=>{
+      let r=0;
+      if(p.deposit&&p.deposit_date&&plFilter(p.deposit_date)) r+=(+p.deposit||0);
+      if(p.paid_date&&plFilter(p.paid_date)) r+=(+p.price||0)-(+p.deposit||0);
+      return s+r;
+    },0);
+    const exp = expenses.filter(e=>{const d=new Date(e.date+'T12:00:00');return d.getMonth()+1===m&&d.getFullYear()===year;}).reduce((s,e)=>s+(+e.amount||0),0);
+    const mileMiles = mileage.filter(ml=>{const d=new Date(ml.date+'T12:00:00');return d.getMonth()+1===m&&d.getFullYear()===year;}).reduce((s,ml)=>s+(+ml.miles||0),0);
+    const mileDed = mileMiles * rate;
+    const profit = rev - exp;
+    const margin = rev > 0 ? (profit/rev*100) : null;
+    const netAfterMile = profit - mileDed;
+    totalRev+=rev; totalExp+=exp; totalMile+=mileMiles;
+    const isCurMonth = m===now.getMonth()+1 && year===now.getFullYear();
+    return {mName, rev, exp, profit, margin, mileDed, netAfterMile, hasData: rev>0||exp>0||mileDed>0, isCurMonth};
+  });
+
+  const totalProfit = totalRev - totalExp;
+  const totalMileDed = totalMile * rate;
+  const totalNet = totalProfit - totalMileDed;
+  const totalMargin = totalRev > 0 ? (totalProfit/totalRev*100) : 0;
+
+  document.getElementById('pl-stats').innerHTML = `
+    <div class="stat-card green"><div class="stat-label">YTD Revenue</div><div class="stat-value">${fmt$(totalRev)}</div></div>
+    <div class="stat-card"><div class="stat-label">YTD Expenses</div><div class="stat-value">${fmt$(totalExp)}</div></div>
+    <div class="stat-card ${totalProfit>=0?'green':'red'}"><div class="stat-label">YTD Gross Profit</div><div class="stat-value">${fmt$(totalProfit)}</div><div class="stat-sub">${totalMargin.toFixed(0)}% margin</div></div>
+    <div class="stat-card blue"><div class="stat-label">YTD Mileage Deduction</div><div class="stat-value">${fmt$(totalMileDed)}</div><div class="stat-sub">${(totalMile).toLocaleString('en-US',{maximumFractionDigits:1})} miles @ ${(rate*100).toFixed(1)}¢</div></div>
+    <div class="stat-card ${totalNet>=0?'green':'red'}"><div class="stat-label">YTD Net After Mileage</div><div class="stat-value">${fmt$(totalNet)}</div><div class="stat-sub">profit minus mileage deduction</div></div>
+  `;
+
+  const tbody = document.getElementById('pl-tbody');
+  tbody.innerHTML = rows.map(r => {
+    if (!r.hasData && !r.isCurMonth) return `<tr style="opacity:0.35">
+      <td>${r.mName}</td><td style="font-family:var(--font-mono)">—</td><td style="font-family:var(--font-mono)">—</td>
+      <td style="font-family:var(--font-mono)">—</td><td style="font-family:var(--font-mono)">—</td>
+      <td style="font-family:var(--font-mono)">—</td><td style="font-family:var(--font-mono)">—</td>
+    </tr>`;
+    const marginColor = r.margin===null?'var(--gray)':r.margin>=50?'var(--green)':r.margin>=25?'var(--yellow)':'var(--red)';
+    return `<tr style="${r.isCurMonth?'background:rgba(196,154,108,0.08);font-weight:500':''}">
+      <td><strong>${r.mName}</strong>${r.isCurMonth?' <span style="font-size:10px;color:var(--wood-warm);font-weight:400">(current)</span>':''}</td>
+      <td style="font-family:var(--font-mono);color:var(--green)">${r.rev?fmt$(r.rev):'—'}</td>
+      <td style="font-family:var(--font-mono);color:${r.exp?'var(--red)':'var(--gray)'}">${r.exp?fmt$(r.exp):'—'}</td>
+      <td style="font-family:var(--font-mono);font-weight:600;color:${r.profit>=0?'var(--green)':'var(--red)'}">${r.rev||r.exp?fmt$(r.profit):'—'}</td>
+      <td style="font-family:var(--font-mono);color:${marginColor}">${r.margin!==null?r.margin.toFixed(0)+'%':'—'}</td>
+      <td style="font-family:var(--font-mono);color:var(--blue)">${r.mileDed?fmt$(r.mileDed):'—'}</td>
+      <td style="font-family:var(--font-mono);font-weight:600;color:${r.netAfterMile>=0?'var(--green)':'var(--red)'}">${r.rev||r.exp||r.mileDed?fmt$(r.netAfterMile):'—'}</td>
+    </tr>`;
+  }).join('') + `<tr style="border-top:2px solid var(--border);background:var(--wood-cream);font-weight:700">
+    <td>TOTAL ${year}</td>
+    <td style="font-family:var(--font-mono);color:var(--green)">${fmt$(totalRev)}</td>
+    <td style="font-family:var(--font-mono);color:var(--red)">${fmt$(totalExp)}</td>
+    <td style="font-family:var(--font-mono);color:${totalProfit>=0?'var(--green)':'var(--red)'}">${fmt$(totalProfit)}</td>
+    <td style="font-family:var(--font-mono);color:${totalMargin>=50?'var(--green)':totalMargin>=25?'var(--yellow)':'var(--red)'}">${totalMargin.toFixed(0)}%</td>
+    <td style="font-family:var(--font-mono);color:var(--blue)">${fmt$(totalMileDed)}</td>
+    <td style="font-family:var(--font-mono);color:${totalNet>=0?'var(--green)':'var(--red)'}">${fmt$(totalNet)}</td>
+  </tr>`;
+}
+
+function renderMileage() {
+  const {mileage, projects} = appData;
+  const search = (document.getElementById('mil-search')?.value||'').toLowerCase();
+  const yearF  = document.getElementById('mil-filter-year')?.value||'';
+  const purpF  = document.getElementById('mil-filter-purpose')?.value||'';
+  const rate   = getMileageRate();
+  const projMap = {}; projects.forEach(p => projMap[p.id] = p.description || p.product_type || 'Project');
+
+  // Populate year filter
+  const years = [...new Set(mileage.map(m => m.date?.slice(0,4)).filter(Boolean))].sort().reverse();
+  const ySel = document.getElementById('mil-filter-year');
+  const curY = ySel.value;
+  ySel.innerHTML = '<option value="">All Years</option>' + years.map(y => `<option${y===curY?' selected':''}>${y}</option>`).join('');
+
+  const rows = mileage.filter(m => {
+    if (search && !(m.from_location||'').toLowerCase().includes(search) && !(m.to_location||'').toLowerCase().includes(search) && !(m.notes||'').toLowerCase().includes(search)) return false;
+    if (yearF && !m.date?.startsWith(yearF)) return false;
+    if (purpF && m.purpose !== purpF) return false;
+    return true;
+  });
+
+  // Stats for filtered/all year
+  const curYear = yearF || new Date().getFullYear().toString();
+  const yearMiles = mileage.filter(m => m.date?.startsWith(curYear)).reduce((s,m) => s+(+m.miles||0), 0);
+  const yearDeduction = yearMiles * rate;
+  const totalMiles = mileage.reduce((s,m) => s+(+m.miles||0), 0);
+  const totalDeduction = totalMiles * rate;
+
+  document.getElementById('mileage-stats').innerHTML = `
+    <div class="stat-card blue"><div class="stat-label">Miles This Year</div><div class="stat-value">${yearMiles.toLocaleString('en-US',{maximumFractionDigits:1})}</div><div class="stat-sub">${curYear}</div></div>
+    <div class="stat-card green"><div class="stat-label">Est. Deduction This Year</div><div class="stat-value">${fmt$(yearDeduction)}</div><div class="stat-sub">@ ${(rate*100).toFixed(1)}¢/mile</div></div>
+    <div class="stat-card"><div class="stat-label">Total Miles (All Time)</div><div class="stat-value">${totalMiles.toLocaleString('en-US',{maximumFractionDigits:1})}</div></div>
+    <div class="stat-card accent"><div class="stat-label">Total Deduction (All Time)</div><div class="stat-value">${fmt$(totalDeduction)}</div></div>
+  `;
+
+  const tbody = document.getElementById('mil-tbody');
+  if (!rows.length) { tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div style="font-size:32px">🚗</div><p>No trips logged yet</p></div></td></tr>`; return; }
+
+  tbody.innerHTML = rows.map(m => {
+    const deduction = (+m.miles||0) * rate;
+    return `<tr>
+      <td style="font-size:12px">${fmtDate(m.date)}</td>
+      <td style="font-size:12px">${esc(m.from_location)||'—'}</td>
+      <td style="font-size:12px">${esc(m.to_location)||'—'}</td>
+      <td><span class="badge" style="background:var(--wood-cream);color:var(--wood-mid);border:1px solid var(--border)">${esc(m.purpose||'—')}</span></td>
+      <td style="font-size:11px;color:var(--gray)">${m.project_id ? esc(projMap[m.project_id]||'—') : '—'}</td>
+      <td style="font-family:var(--font-mono);font-weight:600">${(+m.miles||0).toLocaleString('en-US',{maximumFractionDigits:1})}</td>
+      <td style="font-family:var(--font-mono);color:var(--gray)">${(rate*100).toFixed(1)}¢</td>
+      <td style="font-family:var(--font-mono);font-weight:600;color:var(--green)">${fmt$(deduction)}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-action" onclick="editMileage('${m.id}')">Edit</button>
+        <button class="btn-action danger" onclick="deleteMileage('${m.id}')">Delete</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openMileageModal(id) {
+  editingId = id || null;
+  const {projects} = appData;
+  document.getElementById('mf-project').innerHTML = '<option value="">—</option>' + projects.map(p => `<option value="${p.id}">${esc(p.description||p.product_type||'Project')}</option>`).join('');
+  document.getElementById('mil-modal-title').textContent = id ? 'Edit Trip' : 'Add Trip';
+  ['mf-from','mf-to','mf-notes'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('mf-miles').value = '';
+  document.getElementById('mf-purpose').value = 'Client Visit';
+  document.getElementById('mf-project').value = '';
+  if (!id) document.getElementById('mf-date').value = new Date().toISOString().split('T')[0];
+  if (id) {
+    const m = appData.mileage.find(x => x.id === id);
+    if (m) {
+      document.getElementById('mf-date').value = m.date||'';
+      document.getElementById('mf-miles').value = m.miles||'';
+      document.getElementById('mf-from').value = m.from_location||'';
+      document.getElementById('mf-to').value = m.to_location||'';
+      document.getElementById('mf-purpose').value = m.purpose||'Client Visit';
+      document.getElementById('mf-project').value = m.project_id||'';
+      document.getElementById('mf-notes').value = m.notes||'';
+    }
+  }
+  updateMileagePreview();
+  document.getElementById('mil-modal').style.display = 'flex';
+}
+
+async function saveMileage() {
+  const date  = document.getElementById('mf-date').value;
+  const miles = document.getElementById('mf-miles').value;
+  if (!date || !miles) { alert('Date and miles are required.'); return; }
+  const row = {
+    date, miles: parseFloat(miles),
+    from_location: document.getElementById('mf-from').value.trim(),
+    to_location: document.getElementById('mf-to').value.trim(),
+    purpose: document.getElementById('mf-purpose').value,
+    project_id: document.getElementById('mf-project').value || null,
+    notes: document.getElementById('mf-notes').value.trim(),
+  };
+  // Optimistic update
+  const tempId = editingId || ('temp_' + Date.now());
+  if (editingId) {
+    const idx = appData.mileage.findIndex(m => m.id === editingId);
+    if (idx >= 0) appData.mileage[idx] = {...appData.mileage[idx], ...row};
+  } else {
+    appData.mileage.unshift({id: tempId, created_at: new Date().toISOString(), ...row});
+  }
+  closeMilModal(); renderMileage(); toast(editingId ? 'Trip updated ✓' : 'Trip logged ✓');
+  try {
+    if (editingId) { const u=await dbUpdate('mileage',editingId,row); const idx=appData.mileage.findIndex(m=>m.id===editingId); if(idx>=0) appData.mileage[idx]={...appData.mileage[idx],...u}; }
+    else {
+      const created = await dbInsert('mileage', row);
+      appData.mileage = appData.mileage.filter(m => m.id !== tempId);
+      appData.mileage.unshift(created);
+    }
+  } catch(e) { toast('Sync error — check connection'); setSyncErr(); }
+}
+
+function renderBills() {
+  const {bills, billPayments} = appData;
+  const search = (document.getElementById('bill-search')?.value||'').toLowerCase();
+  const catF   = document.getElementById('bill-filter-cat')?.value||'';
+  const whoF   = document.getElementById('bill-filter-who')?.value||'';
+  const now    = new Date();
+  const curM   = now.getMonth()+1;
+  const curY   = now.getFullYear();
+
+  // Populate who filter
+  const whoSel = document.getElementById('bill-filter-who');
+  if (whoSel) {
+    const cur = whoSel.value;
+    whoSel.innerHTML = '<option value="">All Payers</option>' + BILL_PAYERS.map(p=>`<option${p===cur?' selected':''}>${p}</option>`).join('');
+  }
+
+  // Populate month picker
+  const mSel = document.getElementById('bills-month-view');
+  if (mSel && !mSel.options.length) {
+    const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
+    months.forEach((m,i)=>{const o=document.createElement('option');o.value=i+1;o.textContent=m;if(i===now.getMonth())o.selected=true;mSel.appendChild(o);});
+  }
+  const viewMonth = +(mSel?.value||curM);
+
+  // Stats
+  const monthBills = bills.filter(b=>b.active!==false);
+  const totalDue   = monthBills.reduce((s,b)=>s+(+b.amount||0),0);
+  const paidThisMonth = new Set(billPayments.filter(p=>{const d=new Date(p.paid_date+'T12:00:00');return d.getMonth()+1===now.getMonth()+1&&d.getFullYear()===curY;}).map(p=>p.bill_id));
+  const paidIds    = new Set(billPayments.filter(p=>{const d=new Date(p.paid_date+'T12:00:00');return d.getMonth()+1===viewMonth&&d.getFullYear()===curY;}).map(p=>p.bill_id));
+  const totalPaid  = billPayments.filter(p=>{const d=new Date(p.paid_date+'T12:00:00');return d.getMonth()+1===viewMonth&&d.getFullYear()===curY;}).reduce((s,p)=>s+(+p.amount||0),0);
+  const upcoming   = bills.filter(b=>b.active!==false&&getDaysUntilDue(b)<=(b.alert_days||7)&&!paidIds.has(b.id)).length;
+
+  document.getElementById('bills-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Monthly Total Due</div><div class="stat-value">${fmt$(totalDue)}</div></div>
+    <div class="stat-card green"><div class="stat-label">Paid This Month</div><div class="stat-value">${fmt$(totalPaid)}</div></div>
+    <div class="stat-card ${totalDue-totalPaid>0?'accent':'green'}"><div class="stat-label">Remaining</div><div class="stat-value">${fmt$(Math.max(0,totalDue-totalPaid))}</div></div>
+    <div class="stat-card ${upcoming>0?'red':'green'}"><div class="stat-label">Upcoming / Overdue</div><div class="stat-value">${upcoming}</div><div class="stat-sub">within alert window</div></div>
+  `;
+
+  // Alerts
+  const alertBills = bills.filter(b=>b.active!==false&&!paidThisMonth.has(b.id)).sort((a,b)=>getDaysUntilDue(a)-getDaysUntilDue(b));
+  const alertDiv = document.getElementById('bills-alerts');
+  const overdueBills = alertBills.filter(b=>getDaysUntilDue(b)<0);
+  const upcomingBills = alertBills.filter(b=>getDaysUntilDue(b)>=0&&getDaysUntilDue(b)<=(b.alert_days||7));
+  let alertHtml = '';
+  if (overdueBills.length) {
+    alertHtml += `<div style="background:#FDECEA;border:1px solid #C0392B;border-radius:10px;padding:14px 16px;margin-bottom:8px">
+      <div style="font-weight:600;font-size:12px;color:#7A2020;margin-bottom:8px">🚨 OVERDUE BILLS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${overdueBills.map(b=>{
+          const d=Math.abs(getDaysUntilDue(b));
+          return `<div style="background:white;border:1px solid #C0392B;border-radius:6px;padding:6px 12px;font-size:12px">
+            <strong>${esc(b.name)}</strong> — <strong style="color:var(--red)">${d===0?'due today':d+' days overdue'}</strong> — ${fmt$(b.amount)} (${esc(b.who_pays)})
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  if (upcomingBills.length) {
+    alertHtml += `<div style="background:#FEF3CD;border:1px solid #D4A017;border-radius:10px;padding:14px 16px">
+      <div style="font-weight:600;font-size:12px;color:#7A5000;margin-bottom:8px">⚠️ UPCOMING BILLS</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        ${upcomingBills.map(b=>{
+          const d=getDaysUntilDue(b);
+          return `<div style="background:white;border:1px solid #D4A017;border-radius:6px;padding:6px 12px;font-size:12px">
+            <strong>${esc(b.name)}</strong> — due in <strong>${d===0?'today':d+' days'}</strong> — ${fmt$(b.amount)} (${esc(b.who_pays)})
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }
+  alertDiv.innerHTML = alertHtml;
+
+  // Filter bills
+  let rows = bills.filter(b=>{
+    if(search&&!(b.name||'').toLowerCase().includes(search))return false;
+    if(catF&&b.category!==catF)return false;
+    if(whoF&&b.who_pays!==whoF)return false;
+    return true;
+  }).sort((a,b)=>(a.due_day||99)-(b.due_day||99));
+
+  const tbody=document.getElementById('bills-tbody');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="9"><div class="empty-state"><div style="font-size:32px">🧾</div><p>No bills yet</p></div></td></tr>`;return;}
+
+  tbody.innerHTML=rows.map(b=>{
+    const isPaid=paidIds.has(b.id);
+    const daysLeft=getDaysUntilDue(b);
+    const isOverdue=daysLeft<0&&!isPaid;
+    const isAlert=daysLeft>=0&&daysLeft<=(b.alert_days||7)&&!isPaid;
+    const lastPay=billPayments.filter(p=>p.bill_id===b.id).sort((a,c)=>c.paid_date.localeCompare(a.paid_date))[0];
+    const statusBadgeHtml = isPaid
+      ? `<span class="badge badge-completed">✓ Paid</span>`
+      : isOverdue
+        ? `<span class="badge badge-cancelled">⚠ Overdue ${Math.abs(daysLeft)}d</span>`
+        : isAlert
+          ? `<span class="badge badge-pending-pay">Due in ${daysLeft}d</span>`
+          : `<span class="badge badge-not-started">Upcoming</span>`;
+    return `<tr>
+      <td><strong>${esc(b.name)}</strong>${b.notes?`<div style="font-size:10px;color:var(--gray)">${esc(b.notes)}</div>`:''}${b.website?`<a href="${esc(b.website)}" target="_blank" style="font-size:10px;color:var(--wood-warm)">🔗 website</a>`:''}${b.phone?`<span style="font-size:10px;color:var(--gray);margin-left:8px">📞 ${esc(b.phone)}</span>`:''}</td>
+      <td><span class="badge" style="background:var(--wood-cream);color:var(--wood-mid);border:1px solid var(--border)">${esc(b.category||'—')}</span></td>
+      <td style="font-family:var(--font-mono)">${fmt$(b.amount)}</td>
+      <td>${esc(b.who_pays||'—')}</td>
+      <td>${b.autopay?'<span style="color:var(--green);font-weight:600">✓ Auto</span>':'<span style="color:var(--gray)">Manual</span>'}</td>
+      <td style="font-size:11px">${b.due_custom||('Day '+b.due_day)||'—'} <span style="color:var(--gray)">(${esc(b.due_type||'Monthly')})</span></td>
+      <td>${statusBadgeHtml}</td>
+      <td style="font-size:11px;color:var(--gray)">${lastPay?fmtDate(lastPay.paid_date):'Never'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-action" onclick="openBillPayModal('${b.id}','${esc(b.name)}',${b.amount||0})">Pay</button>
+        <button class="btn-action" onclick="viewBillHistory('${b.id}','${esc(b.name)}')">History</button>
+        <button class="btn-action" onclick="editBill('${b.id}')">Edit</button>
+        <button class="btn-action danger" onclick="deleteBill('${b.id}')">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function openBillModal(id){
+  editingId=id||null;
+  document.getElementById('bill-modal-title').textContent=id?'Edit Bill':'Add Bill';
+  ['bf-name','bf-amount','bf-phone','bf-website','bf-notes','bf-day','bf-custom'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('bf-alert').value='7';
+  document.getElementById('bf-autopay').value='false';
+  document.getElementById('bf-freq').value='Monthly';
+  document.getElementById('bf-who').value='KC';
+  document.getElementById('bf-cat').value='Housing';
+  updateDueFields();
+  if(id){
+    const b=appData.bills.find(x=>x.id===id);
+    if(b){
+      document.getElementById('bf-name').value=b.name||'';
+      document.getElementById('bf-cat').value=b.category||'Housing';
+      document.getElementById('bf-amount').value=b.amount||'';
+      document.getElementById('bf-who').value=b.who_pays||'KC';
+      document.getElementById('bf-autopay').value=b.autopay?'true':'false';
+      document.getElementById('bf-freq').value=b.due_type||'Monthly';
+      document.getElementById('bf-day').value=b.due_day||'';
+      document.getElementById('bf-custom').value=b.due_custom||'';
+      document.getElementById('bf-alert').value=b.alert_days||7;
+      document.getElementById('bf-phone').value=b.phone||'';
+      document.getElementById('bf-website').value=b.website||'';
+      document.getElementById('bf-notes').value=b.notes||'';
+      updateDueFields();
+    }
+  }
+  document.getElementById('bill-modal').style.display='flex';
+}
+
+async function saveBill(){
+  const name=document.getElementById('bf-name').value.trim();
+  if(!name){alert('Bill name required.');return;}
+  const row={
+    name,category:document.getElementById('bf-cat').value,
+    amount:parseFloat(document.getElementById('bf-amount').value)||null,
+    who_pays:document.getElementById('bf-who').value,
+    autopay:document.getElementById('bf-autopay').value==='true',
+    due_type:document.getElementById('bf-freq').value,
+    due_day:parseInt(document.getElementById('bf-day').value)||null,
+    due_custom:document.getElementById('bf-custom').value.trim()||null,
+    alert_days:parseInt(document.getElementById('bf-alert').value)||7,
+    phone:document.getElementById('bf-phone').value.trim()||null,
+    website:document.getElementById('bf-website').value.trim()||null,
+    notes:document.getElementById('bf-notes').value.trim()||null,
+    active:true,
+  };
+  const tempId=editingId||('temp_'+Date.now());
+  if(editingId){const idx=appData.bills.findIndex(b=>b.id===editingId);if(idx>=0)appData.bills[idx]={...appData.bills[idx],...row};}
+  else{appData.bills.push({id:tempId,...row});appData.bills.sort((a,b)=>(a.due_day||99)-(b.due_day||99));}
+  closeBillModal();renderBills();toast(editingId?'Bill updated ✓':'Bill added ✓');
+  try{
+    if(editingId){const u=await dbUpdate('bills',editingId,row);const idx=appData.bills.findIndex(b=>b.id===editingId);if(idx>=0)appData.bills[idx]={...appData.bills[idx],...u};}
+    else{const b=await dbInsert('bills',row);appData.bills=appData.bills.filter(x=>x.id!==tempId);appData.bills.push(b);appData.bills.sort((a,b)=>(a.due_day||99)-(b.due_day||99));}
+  }catch(e){toast('Sync error');setSyncErr();}
+}
+
+function renderCreditors(){
+  const {creditors,creditorPayments}=appData;
+  const totalDebt=creditors.filter(c=>c.active!==false).reduce((s,c)=>s+(+c.current_balance||0),0);
+  const totalPaidAllTime=creditorPayments.reduce((s,p)=>s+(+p.amount||0),0);
+  const highestRate=creditors.filter(c=>c.interest_rate).sort((a,b)=>b.interest_rate-a.interest_rate)[0];
+
+  document.getElementById('creditor-stats').innerHTML=`
+    <div class="stat-card red"><div class="stat-label">Total Debt</div><div class="stat-value">${fmt$(totalDebt)}</div></div>
+    <div class="stat-card green"><div class="stat-label">Total Paid (All Time)</div><div class="stat-value">${fmt$(totalPaidAllTime)}</div></div>
+    <div class="stat-card"><div class="stat-label">Accounts</div><div class="stat-value">${creditors.filter(c=>c.active!==false).length}</div></div>
+    <div class="stat-card accent"><div class="stat-label">Highest Rate</div><div class="stat-value">${highestRate?(highestRate.interest_rate+'%'):'—'}</div><div class="stat-sub">${highestRate?esc(highestRate.name):''}</div></div>
+  `;
+
+  // Avalanche order (highest interest first, then highest balance)
+  const active=creditors.filter(c=>c.active!==false&&c.current_balance>0).sort((a,b)=>(+b.interest_rate||0)-(+a.interest_rate||0)||(+b.current_balance||0)-(+a.current_balance||0));
+  document.getElementById('avalanche-list').innerHTML=active.length?active.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <div style="width:24px;height:24px;border-radius:50%;background:${i===0?'var(--red)':i===1?'var(--accent)':'var(--wood-light)'};color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0">${i+1}</div>
+      <div style="flex:1"><strong style="font-size:13px">${esc(c.name)}</strong> <span style="font-size:11px;color:var(--gray)">(${c.interest_rate||0}% APR)</span></div>
+      <div style="font-family:var(--font-mono);font-weight:600;color:var(--red)">${fmt$(c.current_balance)}</div>
+      <button class="btn-action" onclick="openCredPayModal('${c.id}','${esc(c.name)}',${c.minimum_payment||0})">Pay</button>
+    </div>`).join('')+'<div style="font-size:11px;color:var(--gray);margin-top:10px">Pay minimums on all, put extra toward #1 first.</div>'
+    :'<div style="color:var(--gray);font-size:12px;padding:8px">No active creditors</div>';
+
+  const tbody=document.getElementById('creditors-tbody');
+  if(!creditors.length){tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div style="font-size:32px">💳</div><p>No creditors yet</p></div></td></tr>`;return;}
+  tbody.innerHTML=creditors.map(c=>{
+    const paid=creditorPayments.filter(p=>p.creditor_id===c.id).reduce((s,p)=>s+(+p.amount||0),0);
+    return `<tr>
+      <td><strong>${esc(c.name)}</strong>${c.notes?`<div style="font-size:10px;color:var(--gray)">${esc(c.notes)}</div>`:''}${c.phone?`<div style="font-size:10px;color:var(--gray)">📞 ${esc(c.phone)}</div>`:''}${c.website?`<a href="${esc(c.website)}" target="_blank" style="font-size:10px;color:var(--wood-warm)">🔗</a>`:''}</td>
+      <td><span class="badge" style="background:var(--wood-cream);color:var(--wood-mid);border:1px solid var(--border)">${esc(c.creditor_type||'Other')}</span></td>
+      <td style="font-family:var(--font-mono);font-weight:600;color:var(--red)">${fmt$(c.current_balance)}</td>
+      <td style="font-family:var(--font-mono)">${c.interest_rate?c.interest_rate+'%':'—'}</td>
+      <td style="font-family:var(--font-mono)">${fmt$(c.minimum_payment)}</td>
+      <td style="font-size:12px">${c.due_day?'Day '+c.due_day:'—'}</td>
+      <td style="font-family:var(--font-mono);color:var(--green)">${paid?fmt$(paid):'—'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-action" onclick="openCredPayModal('${c.id}','${esc(c.name)}',${c.minimum_payment||0})">Pay</button>
+        <button class="btn-action" onclick="editCreditor('${c.id}')">Edit</button>
+        <button class="btn-action danger" onclick="deleteCreditor('${c.id}')">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+async function saveCredPayment(){
+  const date=document.getElementById('cp-date').value;
+  const amount=document.getElementById('cp-amount').value;
+  if(!date||!amount||!payingCreditorId){alert('Date and amount required.');return;}
+  const row={creditor_id:payingCreditorId,paid_date:date,amount:parseFloat(amount),notes:document.getElementById('cp-notes').value.trim()};
+  // Update balance
+  const idx=appData.creditors.findIndex(c=>c.id===payingCreditorId);
+  if(idx>=0){appData.creditors[idx]={...appData.creditors[idx],current_balance:Math.max(0,(+appData.creditors[idx].current_balance||0)-parseFloat(amount))};}
+  const tempId='temp_'+Date.now();
+  appData.creditorPayments.unshift({id:tempId,...row});
+  closeCredPayModal();renderCreditors();toast('Payment logged ✓');
+  try{
+    _suppressRefresh['creditor_payments']=Date.now()+8000;
+    _suppressRefresh['creditors']=Date.now()+8000;
+    const p=await dbInsert('creditor_payments',row);
+    appData.creditorPayments=appData.creditorPayments.filter(x=>x.id!==tempId);
+    appData.creditorPayments.unshift(p);
+    if(idx>=0)await dbUpdate('creditors',payingCreditorId,{current_balance:appData.creditors[idx].current_balance});
+  }catch(e){toast('Sync error');setSyncErr();}
+}
+
+function openCreditorModal(id){
+  editingId=id||null;
+  document.getElementById('creditor-modal-title').textContent=id?'Edit Creditor':'Add Creditor';
+  ['cr-name','cr-balance','cr-orig','cr-rate','cr-min','cr-day','cr-phone','cr-website','cr-notes'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('cr-type').value='Credit Card';
+  if(id){
+    const c=appData.creditors.find(x=>x.id===id);
+    if(c){
+      document.getElementById('cr-name').value=c.name||'';
+      document.getElementById('cr-type').value=c.creditor_type||'Credit Card';
+      document.getElementById('cr-balance').value=c.current_balance||'';
+      document.getElementById('cr-orig').value=c.original_balance||'';
+      document.getElementById('cr-rate').value=c.interest_rate||'';
+      document.getElementById('cr-min').value=c.minimum_payment||'';
+      document.getElementById('cr-day').value=c.due_day||'';
+      document.getElementById('cr-phone').value=c.phone||'';
+      document.getElementById('cr-website').value=c.website||'';
+      document.getElementById('cr-notes').value=c.notes||'';
+    }
+  }
+  document.getElementById('creditor-modal').style.display='flex';
+}
+
+async function saveCreditor(){
+  const name=document.getElementById('cr-name').value.trim();
+  const balance=document.getElementById('cr-balance').value;
+  if(!name||!balance){alert('Name and balance required.');return;}
+  const row={
+    name,creditor_type:document.getElementById('cr-type').value,
+    current_balance:parseFloat(balance),
+    original_balance:parseFloat(document.getElementById('cr-orig').value)||null,
+    interest_rate:parseFloat(document.getElementById('cr-rate').value)||null,
+    minimum_payment:parseFloat(document.getElementById('cr-min').value)||null,
+    due_day:parseInt(document.getElementById('cr-day').value)||null,
+    phone:document.getElementById('cr-phone').value.trim()||null,
+    website:document.getElementById('cr-website').value.trim()||null,
+    notes:document.getElementById('cr-notes').value.trim()||null,
+    active:true,
+  };
+  const tempId=editingId||('temp_'+Date.now());
+  if(editingId){const idx=appData.creditors.findIndex(c=>c.id===editingId);if(idx>=0)appData.creditors[idx]={...appData.creditors[idx],...row};}
+  else{appData.creditors.unshift({id:tempId,...row});}
+  closeCreditorModal();renderCreditors();toast(editingId?'Creditor updated ✓':'Creditor added ✓');
+  try{
+    if(editingId){const u=await dbUpdate('creditors',editingId,row);const idx=appData.creditors.findIndex(c=>c.id===editingId);if(idx>=0)appData.creditors[idx]={...appData.creditors[idx],...u};}
+    else{const c=await dbInsert('creditors',row);appData.creditors=appData.creditors.filter(x=>x.id!==tempId);appData.creditors.unshift(c);}
+  }catch(e){toast('Sync error');setSyncErr();}
+}
+
+function updateDeductiblePreview() {
+  const person = document.getElementById('mdf-person')?.value;
+  const date   = document.getElementById('mdf-date')?.value;
+  const year   = date ? new Date(date + 'T12:00:00').getFullYear() : new Date().getFullYear();
+  const ded    = parseFloat(document.getElementById('mdf-deductible')?.value) || 0;
+  const info   = getDeductibleInfo(person, year);
+  const el     = document.getElementById('mdf-ded-preview');
+  if (el) {
+    if (info) {
+      const newUsed = info.used + ded;
+      const newRem  = Math.max(0, info.total - newUsed);
+      el.innerHTML = `<strong>${esc(person)}'s ${year} deductible:</strong> ${fmt$(info.total)} total · ${fmt$(info.used)} used · After this visit: <strong style="color:${newRem===0?'var(--green)':'var(--accent)'}">${fmt$(newRem)} remaining</strong>`;
+    } else {
+      el.innerHTML = `<span style="color:var(--gray)">No deductible set for ${esc(person)} in ${year} — add in ⚙️ Settings → Medical.</span>`;
+    }
+  }
+}
+
+async function saveSettings(){
+  await _origSaveSettings();
+  // Save deductible rows
+  const rows=appData.deductibles.map((d,i)=>({
+    ...d,
+    person:document.getElementById('ds-person-'+i)?.value||d.person,
+    year:+document.getElementById('ds-year-'+i)?.value||d.year,
+    deductible_amount:parseFloat(document.getElementById('ds-amt-'+i)?.value)||d.deductible_amount,
+  }));
+  for(const row of rows){
+    try{
+      if(String(row.id).startsWith('temp_')){
+        const {id,...data}=row;
+        const created=await dbInsert('deductible_settings',data);
+        row.id=created.id;
+      } else {
+        await dbUpdate('deductible_settings',row.id,{person:row.person,year:row.year,deductible_amount:row.deductible_amount});
+      }
+    }catch(e){console.warn('Deductible save error:',e);}
+  }
+  appData.deductibles=rows;
+  toast('All settings saved ✓');
+}
+
+function populateProviderDropdowns() {
+  const opts = '<option value="">Select provider…</option>' +
+    appData.providers.map(p=>`<option value="${p.id}">${esc(p.name)}${p.specialty?' — '+esc(p.specialty):''}</option>`).join('');
+  ['mdf-provider-sel','ap-provider'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){ const v=el.value; el.innerHTML=opts; el.value=v; }
+  });
+}
+
+function openProviderModal(id) {
+  editingId=id||null;
+  document.getElementById('provider-modal-title').textContent=id?'Edit Provider':'Add Provider';
+  ['pv-name','pv-specialty','pv-address','pv-phone','pv-fax','pv-website','pv-portal','pv-notes'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('pv-cat').value='Medical';
+  if(id){
+    const p=appData.providers.find(x=>x.id===id);
+    if(p){
+      document.getElementById('pv-name').value=p.name||'';
+      document.getElementById('pv-cat').value=p.category||'Medical';
+      document.getElementById('pv-specialty').value=p.specialty||'';
+      document.getElementById('pv-address').value=p.address||'';
+      document.getElementById('pv-phone').value=p.phone||'';
+      document.getElementById('pv-fax').value=p.fax||'';
+      document.getElementById('pv-website').value=p.website||'';
+      document.getElementById('pv-portal').value=p.portal||'';
+      document.getElementById('pv-notes').value=p.notes||'';
+    }
+  }
+  document.getElementById('provider-modal').style.display='flex';
+}
+
+async function saveProvider(){
+  const name=document.getElementById('pv-name').value.trim();
+  if(!name){alert('Provider name required.');return;}
+  _suppressRefresh['providers']=Date.now()+15000;
+  const row={name,category:document.getElementById('pv-cat').value,specialty:document.getElementById('pv-specialty').value.trim()||null,address:document.getElementById('pv-address').value.trim()||null,phone:document.getElementById('pv-phone').value.trim()||null,fax:document.getElementById('pv-fax').value.trim()||null,website:document.getElementById('pv-website').value.trim()||null,portal:document.getElementById('pv-portal').value.trim()||null,notes:document.getElementById('pv-notes').value.trim()||null};
+  const tempId=editingId||('temp_'+Date.now());
+  if(editingId){const idx=appData.providers.findIndex(p=>p.id===editingId);if(idx>=0)appData.providers[idx]={...appData.providers[idx],...row};}
+  else{appData.providers.push({id:tempId,...row});appData.providers.sort((a,b)=>a.name.localeCompare(b.name));}
+  closeProviderModal();renderProviders();populateProviderDropdowns();toast(editingId?'Provider updated ✓':'Provider added ✓');
+  try{
+    if(editingId){const u=await dbUpdate('providers',editingId,row);const idx=appData.providers.findIndex(p=>p.id===editingId);if(idx>=0)appData.providers[idx]={...appData.providers[idx],...u};}
+    else{const p=await dbInsert('providers',row);appData.providers=appData.providers.filter(x=>x.id!==tempId);appData.providers.push(p);appData.providers.sort((a,b)=>a.name.localeCompare(b.name));}
+    populateProviderDropdowns();
+  }catch(e){toast('Sync error');setSyncErr();}
+}
+
+function openApptModal(id){
+  editingId=id||null;
+  populateProviderDropdowns();
+  document.getElementById('appt-modal-title').textContent=id?'Edit Appointment':'Add Appointment';
+  ['ap-reason','ap-notes'].forEach(f=>document.getElementById(f).value='');
+  document.getElementById('ap-person').value='KC';
+  document.getElementById('ap-cat').value='Medical';
+  document.getElementById('ap-alert').value='3';
+  document.getElementById('ap-provider').value='';
+  // Default to tomorrow at 9am
+  const tomorrow=new Date(); tomorrow.setDate(tomorrow.getDate()+1); tomorrow.setHours(9,0,0,0);
+  document.getElementById('ap-date').value=tomorrow.toISOString().slice(0,16);
+  if(id){
+    const a=appData.appointments.find(x=>x.id===id);
+    if(a){
+      document.getElementById('ap-person').value=a.person||'KC';
+      document.getElementById('ap-date').value=a.appointment_date?a.appointment_date.slice(0,16):'';
+      document.getElementById('ap-provider').value=a.provider_id||'';
+      document.getElementById('ap-cat').value=a.category||'Medical';
+      document.getElementById('ap-reason').value=a.reason||'';
+      document.getElementById('ap-alert').value=a.alert_days||3;
+      document.getElementById('ap-notes').value=a.notes||'';
+    }
+  }
+  document.getElementById('appt-modal').style.display='flex';
+}
+
+async function saveAppt(){
+  const date=document.getElementById('ap-date').value;
+  const person=document.getElementById('ap-person').value;
+  if(!date||!person){alert('Date and person required.');return;}
+  _suppressRefresh['appointments']=Date.now()+15000;
+  const providerId=document.getElementById('ap-provider').value||null;
+  const prov=providerId?appData.providers.find(p=>p.id===providerId):null;
+  const row={person,appointment_date:date,provider_id:providerId,provider_name:prov?.name||null,category:document.getElementById('ap-cat').value,reason:document.getElementById('ap-reason').value.trim()||null,alert_days:+document.getElementById('ap-alert').value||3,notes:document.getElementById('ap-notes').value.trim()||null};
+  const tempId=editingId||('temp_'+Date.now());
+  if(editingId){const idx=appData.appointments.findIndex(a=>a.id===editingId);if(idx>=0)appData.appointments[idx]={...appData.appointments[idx],...row};}
+  else{appData.appointments.unshift({id:tempId,...row});}
+  closeApptModal();renderProviders();toast(editingId?'Appointment updated ✓':'Appointment saved ✓');
+  try{
+    if(editingId){const u=await dbUpdate('appointments',editingId,row);const idx=appData.appointments.findIndex(a=>a.id===editingId);if(idx>=0)appData.appointments[idx]={...appData.appointments[idx],...u};}
+    else{const a=await dbInsert('appointments',row);appData.appointments=appData.appointments.filter(x=>x.id!==tempId);appData.appointments.unshift(a);}
+  }catch(e){toast('Sync error');setSyncErr();}
+}
+
+function viewBillHistory(billId, billName) {
+  const payments = appData.billPayments
+    .filter(p => p.bill_id === billId)
+    .sort((a,b) => b.paid_date.localeCompare(a.paid_date));
+  document.getElementById('billhistory-title').textContent = billName + ' — Payment History';
+  const el = document.getElementById('billhistory-list');
+  if (!payments.length) {
+    el.innerHTML = '<div style="color:var(--gray);padding:16px;text-align:center">No payments logged yet</div>';
+  } else {
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:13px">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Date</th>
+        <th style="text-align:left;padding:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Amount</th>
+        <th style="text-align:left;padding:8px;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--gray)">Confirmation / Notes</th>
+        <th style="padding:8px"></th>
+      </tr></thead>
+      <tbody>${payments.map(p=>`<tr style="border-bottom:1px solid rgba(217,201,179,0.4)">
+        <td style="padding:8px;font-family:var(--font-mono)">${fmtDate(p.paid_date)}</td>
+        <td style="padding:8px;font-family:var(--font-mono);font-weight:600;color:var(--green)">${fmt$(p.amount)}</td>
+        <td style="padding:8px;color:var(--gray)">${esc(p.notes)||'<span style="color:var(--border)">—</span>'}</td>
+        <td style="padding:8px;white-space:nowrap">
+          <button class="btn-action" onclick="openEditBillPay('${p.id}','${p.paid_date}',${p.amount},'${esc(p.notes||'')}')">Edit</button>
+          <button class="btn-action danger" onclick="deleteBillPayment('${p.id}','${billId}')">Del</button>
+        </td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  }
+  document.getElementById('billhistory-modal').style.display = 'flex';
+}
+
+async function saveEditBillPay() {
+  const date = document.getElementById('ebp-date').value;
+  const amount = document.getElementById('ebp-amount').value;
+  const notes = document.getElementById('ebp-notes').value.trim();
+  if (!date || !amount || !editingPaymentId) return;
+  _suppressRefresh['bill_payments'] = Date.now() + 15000;
+  const idx = appData.billPayments.findIndex(p => p.id === editingPaymentId);
+  if (idx >= 0) appData.billPayments[idx] = {...appData.billPayments[idx], paid_date:date, amount:parseFloat(amount), notes};
+  closeEditBillPayModal();
+  closeBillHistoryModal();
+  renderBills();
+  toast('Payment updated ✓');
+  try { await dbUpdate('bill_payments', editingPaymentId, {paid_date:date, amount:parseFloat(amount), notes}); }
+  catch(e) { toast('Sync error'); setSyncErr(); }
+}
+
+function renderProviders() {
+  const {providers, medicalVisits} = appData;
+  const search = (document.getElementById('prov-search')?.value||'').toLowerCase();
+  const catF = document.getElementById('prov-filter-cat')?.value||'';
+  let rows = providers.filter(p=>{
+    if(search&&!(p.name||'').toLowerCase().includes(search)&&!(p.specialty||'').toLowerCase().includes(search))return false;
+    if(catF&&p.category!==catF)return false;
+    return true;
+  });
+  const tbody = document.getElementById('providers-tbody');
+  if (!tbody) return;
+  if (!rows.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty-state"><div style="font-size:32px">👨‍⚕️</div><p>No providers yet — add your doctors, dentists, and specialists here</p></div></td></tr>`; return; }
+  tbody.innerHTML = rows.map(p=>{
+    const lastVisit = medicalVisits.filter(v=>v.provider===p.name).sort((a,b)=>b.visit_date.localeCompare(a.visit_date))[0];
+    return `<tr>
+      <td><strong>${esc(p.name)}</strong>${p.notes?`<div style="font-size:10px;color:var(--gray)">${esc(p.notes)}</div>`:''}</td>
+      <td><span class="badge badge-${p.category==='Medical'?'in-production':p.category==='Dental'?'pending-pay':p.category==='Vision'?'ready':'on-hold'}">${esc(p.category||'Medical')}</span></td>
+      <td style="font-size:12px">${esc(p.specialty)||'—'}</td>
+      <td style="font-size:11px;color:var(--gray);max-width:160px">${esc(p.address)||'—'}</td>
+      <td>${p.phone?`<a href="tel:${esc(p.phone)}" style="font-size:12px">${esc(p.phone)}</a>`:'—'}${p.fax?`<div style="font-size:10px;color:var(--gray)">Fax: ${esc(p.fax)}</div>`:''}</td>
+      <td>${p.portal?`<a href="${esc(p.portal)}" target="_blank" style="font-size:11px;color:var(--blue)">🔗 Portal</a>`:p.website?`<a href="${esc(p.website)}" target="_blank" style="font-size:11px;color:var(--wood-warm)">🔗 Website</a>`:'—'}</td>
+      <td style="font-size:11px;color:var(--gray)">${lastVisit?fmtDate(lastVisit.visit_date):'No visits yet'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn-action" onclick="editProvider('${p.id}')">Edit</button>
+        <button class="btn-action danger" onclick="deleteProvider('${p.id}')">Del</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+function renderMedical() {
+  const { medicalVisits, deductibles } = appData;
+  const search  = (document.getElementById('med-search')?.value || '').toLowerCase();
+  const personF = document.getElementById('med-filter-person')?.value || '';
+  const catF    = document.getElementById('med-filter-cat')?.value || '';
+  const yearF   = document.getElementById('med-filter-year')?.value || '';
+  const curYear = new Date().getFullYear();
+
+  // Person filter options
+  const persons = [...new Set([...deductibles.map(d => d.person), ...medicalVisits.map(v => v.person), 'KC', 'Adrian'])];
+  const pSel = document.getElementById('med-filter-person');
+  if (pSel) { const cur = pSel.value; pSel.innerHTML = '<option value="">All People</option>' + persons.map(p => `<option${p===cur?' selected':''}>${esc(p)}</option>`).join(''); }
+
+  // Stats
+  const ytdVisits = medicalVisits.filter(v => v.visit_year === curYear);
+  const ytdPaid   = ytdVisits.reduce((s, v) => s + (+v.amount_paid || 0) + (+v.copay || 0), 0);
+  document.getElementById('medical-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-label">Visits This Year</div><div class="stat-value">${ytdVisits.length}</div></div>
+    <div class="stat-card red"><div class="stat-label">Out-of-Pocket This Year</div><div class="stat-value">${fmt$(ytdPaid)}</div></div>
+    <div class="stat-card"><div class="stat-label">Total Visits (All Time)</div><div class="stat-value">${medicalVisits.length}</div></div>
+  `;
+
+  // Deductible cards
+  const dedCards = persons.map(p => {
+    const info = getDeductibleInfo(p, curYear);
+    if (!info) return null;
+    const pct = Math.min((info.used / info.total) * 100, 100);
+    return `<div class="dash-card">
+      <div class="dash-card-title">${esc(p)} — ${curYear} Deductible</div>
+      <div style="font-size:22px;font-family:var(--font-display);font-weight:700;color:${info.met?'var(--green)':'var(--wood-dark)'}">${fmt$(info.remaining)} left</div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${pct}%;background:${info.met?'var(--green)':'var(--wood-light)'}"></div></div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--gray)"><span>${fmt$(info.used)} used</span><span>Deductible: ${fmt$(info.total)}</span></div>
+      ${info.met ? '<div style="margin-top:8px;font-size:11px;color:var(--green);font-weight:600">✓ Deductible met!</div>' : ''}
+    </div>`;
+  }).filter(Boolean);
+  const dedEl = document.getElementById('deductible-cards');
+  if (dedEl) dedEl.innerHTML = dedCards.join('') || '<div style="color:var(--gray);font-size:12px;padding:8px">Set deductibles in ⚙️ Settings → Medical</div>';
+
+  // Filter visits
+  const rows = medicalVisits.filter(v => {
+    if (search && !(v.provider||'').toLowerCase().includes(search) && !(v.reason||'').toLowerCase().includes(search)) return false;
+    if (personF && v.person !== personF) return false;
+    if (catF && v.category !== catF) return false;
+    if (yearF && String(v.visit_year) !== yearF) return false;
+    return true;
+  });
+
+  const tbody = document.getElementById('medical-tbody');
+  if (!rows.length) { tbody.innerHTML = `<tr><td colspan="11"><div class="empty-state"><div style="font-size:32px">🏥</div><p>No visits logged yet</p></div></td></tr>`; return; }
+
+  tbody.innerHTML = rows.map(v => `<tr>
+    <td style="font-size:12px">${fmtDate(v.visit_date)}</td>
+    <td><strong>${esc(v.person)}</strong></td>
+    <td><span class="badge badge-${v.category==='Medical'?'in-production':v.category==='Dental'?'pending-pay':v.category==='Vision'?'ready':'on-hold'}">${esc(v.category||'Medical')}</span></td>
+    <td>${esc(v.provider)||'—'}${v.phone?`<div style="font-size:10px;color:var(--gray)">📞 ${esc(v.phone)}</div>`:''}${v.address?`<div style="font-size:10px;color:var(--gray)">${esc(v.address)}</div>`:''}</td>
+    <td style="font-size:12px;max-width:150px">${esc(v.reason)||'—'}</td>
+    <td style="font-family:var(--font-mono)">${v.copay ? fmt$(v.copay) : '—'}</td>
+    <td style="font-family:var(--font-mono);color:var(--red)">${v.amount_paid ? fmt$(v.amount_paid) : '—'}</td>
+    <td style="font-family:var(--font-mono)">${v.amount_billed ? fmt$(v.amount_billed) : '—'}</td>
+    <td style="font-family:var(--font-mono);color:var(--green)">${v.insurance_paid ? fmt$(v.insurance_paid) : '—'}</td>
+    <td style="font-family:var(--font-mono)">${v.applied_to_deductible ? fmt$(v.applied_to_deductible) : '—'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn-action" onclick="editMedical('${v.id}')">Edit</button>
+      <button class="btn-action danger" onclick="deleteMedical('${v.id}')">Del</button>
+    </td>
+  </tr>`).join('');
+}
+
+function openMedicalModal(id) {
+  editingId = id || null;
+  document.getElementById('medical-modal-title').textContent = id ? 'Edit Visit' : 'Log Visit';
+  ['mdf-provider','mdf-address','mdf-phone','mdf-reason','mdf-notes'].forEach(f => document.getElementById(f).value = '');
+  ['mdf-copay','mdf-paid','mdf-billed','mdf-ins','mdf-deductible'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('mdf-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('mdf-person').value = 'KC';
+  document.getElementById('mdf-cat').value = 'Medical';
+  populateProviderDropdowns();
+  document.getElementById('mdf-provider-sel').value = '';
+  if (id) {
+    const v = appData.medicalVisits.find(x => x.id === id);
+    if (v) {
+      document.getElementById('mdf-person').value    = v.person || 'KC';
+      document.getElementById('mdf-date').value      = v.visit_date || '';
+      document.getElementById('mdf-cat').value       = v.category || 'Medical';
+      document.getElementById('mdf-provider').value  = v.provider || '';
+      document.getElementById('mdf-address').value   = v.address || '';
+      document.getElementById('mdf-phone').value     = v.phone || '';
+      document.getElementById('mdf-reason').value    = v.reason || '';
+      document.getElementById('mdf-copay').value     = v.copay || '';
+      document.getElementById('mdf-paid').value      = v.amount_paid || '';
+      document.getElementById('mdf-billed').value    = v.amount_billed || '';
+      document.getElementById('mdf-ins').value       = v.insurance_paid || '';
+      document.getElementById('mdf-deductible').value = v.applied_to_deductible || '';
+      if (v.provider) {
+        const prov = appData.providers.find(p => p.name === v.provider);
+        if (prov) document.getElementById('mdf-provider-sel').value = prov.id;
+      }
+    }
+  }
+  updateDeductiblePreview();
+  document.getElementById('medical-modal').style.display = 'flex';
+}
+
+async function saveMedical() {
+  const date   = document.getElementById('mdf-date').value;
+  const person = document.getElementById('mdf-person').value;
+  if (!date || !person) { alert('Date and person required.'); return; }
+  _suppressRefresh['medical_visits'] = Date.now() + 15000;
+  const year = new Date(date + 'T12:00:00').getFullYear();
+  const row = {
+    person, visit_date: date, visit_year: year,
+    category:              document.getElementById('mdf-cat').value,
+    provider:              document.getElementById('mdf-provider').value.trim() || null,
+    address:               document.getElementById('mdf-address').value.trim() || null,
+    phone:                 document.getElementById('mdf-phone').value.trim() || null,
+    reason:                document.getElementById('mdf-reason').value.trim() || null,
+    copay:                 parseFloat(document.getElementById('mdf-copay').value) || null,
+    amount_paid:           parseFloat(document.getElementById('mdf-paid').value) || null,
+    amount_billed:         parseFloat(document.getElementById('mdf-billed').value) || null,
+    insurance_paid:        parseFloat(document.getElementById('mdf-ins').value) || null,
+    applied_to_deductible: parseFloat(document.getElementById('mdf-deductible').value) || null,
+    notes:                 document.getElementById('mdf-notes').value.trim() || null,
+  };
+  const tempId = editingId || ('temp_' + Date.now());
+  if (editingId) {
+    const idx = appData.medicalVisits.findIndex(v => v.id === editingId);
+    if (idx >= 0) appData.medicalVisits[idx] = { ...appData.medicalVisits[idx], ...row };
+  } else {
+    appData.medicalVisits.unshift({ id: tempId, created_at: new Date().toISOString(), ...row });
+  }
+  closeMedicalModal();
+  renderMedical();
+  toast(editingId ? 'Visit updated ✓' : 'Visit logged ✓');
+  try {
+    if (editingId) {
+      const u = await dbUpdate('medical_visits', editingId, row);
+      const idx = appData.medicalVisits.findIndex(v => v.id === editingId);
+      if (idx >= 0) appData.medicalVisits[idx] = { ...appData.medicalVisits[idx], ...u };
+    } else {
+      const v = await dbInsert('medical_visits', row);
+      appData.medicalVisits = appData.medicalVisits.filter(x => x.id !== tempId);
+      appData.medicalVisits.unshift(v);
+      renderMedical();
+    }
+  } catch(e) { toast('Sync error'); setSyncErr(); }
+}
+
+function lsGet(k, def) { try { const v=localStorage.getItem(k); return v?JSON.parse(v):def; } catch { return def; } }
+
+function lsSet(k, v) { localStorage.setItem(k, JSON.stringify(v)); }
+
+async function saveSupabaseConfig() {
+  const url = document.getElementById('setup-url').value.trim();
+  const key = document.getElementById('setup-key').value.trim();
+  if (!url || !key) { document.getElementById('setup-error').textContent = 'Both fields are required.'; return; }
+  document.getElementById('setup-screen').style.display = 'none';
+  await connectSupabase(url, key);
+}
+
+async function dbInsert(table, row) {
+  setSyncing();
+  _suppressRefresh[table] = Date.now() + 8000; // suppress realtime bounce for 8s
+  const { data, error } = await sb.from(table).insert([row]).select().single();
+  if (error) { setSyncErr(); throw error; }
+  setSynced();
+  return data;
+}
+
+async function dbUpdate(table, id, row) {
+  setSyncing();
+  _suppressRefresh[table] = Date.now() + 8000;
+  const { data, error } = await sb.from(table).update(row).eq('id', id).select().single();
+  if (error) { setSyncErr(); throw error; }
+  setSynced();
+  return data;
+}
+
+async function dbDelete(table, id) {
+  setSyncing();
+  _suppressRefresh[table] = Date.now() + 8000;
+  const { error } = await sb.from(table).delete().eq('id', id);
+  if (error) { setSyncErr(); throw error; }
+  setSynced();
+}
+
+function setupRealtime() {
+  if (realtimeChannel) realtimeChannel.unsubscribe();
+  realtimeChannel = sb.channel('db-changes')
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' },  () => refreshTable('projects'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'clients' },   () => refreshTable('clients'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'expenses' },  () => refreshTable('expenses'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'mileage' },         () => refreshTable('mileage'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bills' },           () => refreshTable('bills'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'bill_payments' },   () => refreshTable('bill_payments'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'creditors' },       () => refreshTable('creditors'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'creditor_payments'},() => refreshTable('creditor_payments'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'medical_visits' },  () => refreshTable('medical_visits'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'providers' },         () => refreshTable('providers'))
+    .on('postgres_changes', { event: '*', schema: 'public', table: 'appointments' },      () => refreshTable('appointments'))
+    .subscribe();
+}
+
+function refreshTable(table) {
+  if (_suppressRefresh[table] && Date.now() < _suppressRefresh[table]) return;
+  clearTimeout(_refreshTimers[table]);
+  _refreshTimers[table] = setTimeout(() => _doRefreshTable(table), 400);
+}
+
+function mergeData(fresh, local) {
+  const freshMap = new Map(fresh.map(r => [r.id, r]));
+  // Keep any local temp records not yet in DB
+  const temps = local.filter(r => String(r.id).startsWith('temp_'));
+  // Merge: fresh records + any temps not already replaced
+  return dedup([...fresh, ...temps]);
+}
+
+function dedupBy(arr, keyFn) {
+  const seen = new Set();
+  return arr.filter(item => {
+    const k = keyFn(item);
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+}
+
+function dedup(arr) {
+  // First remove any temp_ placeholder records (real DB records replace them)
+  const realOnly = arr.filter(item => !String(item.id).startsWith('temp_'));
+  // Then deduplicate by real UUID, keeping first occurrence
+  const seen = new Set();
+  return realOnly.filter(item => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
+function setSyncing() { const d=document.getElementById('sync-dot'); const l=document.getElementById('sync-label'); if(d){d.className='sync-dot syncing';} if(l)l.textContent='Saving…'; }
+
+function setSynced()  { const d=document.getElementById('sync-dot'); const l=document.getElementById('sync-label'); if(d){d.className='sync-dot';} if(l)l.textContent='Synced'; }
+
+function setSyncErr() { const d=document.getElementById('sync-dot'); const l=document.getElementById('sync-label'); if(d){d.className='sync-dot error';} if(l)l.textContent='Sync error'; }
+
+function getSettings() { return (appData.settings?.data) || DEFAULT_SETTINGS; }
+
+function getUsers() { return getSettings().users || DEFAULT_SETTINGS.users; }
+
+function showLoginScreen() {
+  const users = getUsers();
+  const sel = document.getElementById('login-user');
+  sel.innerHTML = '<option value="">Select...</option>' + users.map(u=>`<option value="${esc(u.key)}">${esc(u.name)}</option>`).join('');
+  document.getElementById('login-screen').style.display = 'flex';
+}
+
+function doLogin() {
+  const userKey = document.getElementById('login-user').value;
+  const pin = document.getElementById('login-pin').value;
+  const err = document.getElementById('login-error');
+  if (!userKey) { err.textContent = 'Please select a user.'; return; }
+  const users = getUsers();
+  const user = users.find(u => u.key === userKey);
+  if (!user || pin !== user.pin) { err.textContent = 'Incorrect PIN. Try again.'; return; }
+  currentUser = user;
+  localStorage.setItem('cjd_session', JSON.stringify({key:user.key,name:user.name,role:user.role}));
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nav-user-name').textContent = user.name;
+  initApp();
+}
+
+function doLogout() {
+  currentUser = null;
+  localStorage.removeItem('cjd_session');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-pin').value = '';
+  document.getElementById('login-error').textContent = '';
+  document.getElementById('login-user').value = '';
+  showLoginScreen();
+}
+
+function showLoading(msg) { document.getElementById('loading-overlay').style.display='flex'; document.getElementById('loading-text').textContent=msg||'Loading…'; }
+
+function hideLoading() { document.getElementById('loading-overlay').style.display='none'; }
+
+function showTab(t) {
+  TABS.forEach(id => {
+    document.getElementById('tab-'+id+'-content').style.display = id===t?'block':'none';
+    document.getElementById('tab-'+id).classList.toggle('active', id===t);
+  });
+  if(t==='dashboard') renderDashboard();
+  if(t==='projects') renderProjects();
+  if(t==='clients') renderClients();
+  if(t==='expenses') renderExpenses();
+  if(t==='mileage') renderMileage();
+  if(t==='pl') renderPL();
+  if(t==='bills') renderBills();
+  if(t==='creditors') renderCreditors();
+  if(t==='medical') renderMedical();
+  if(t==='settings') renderSettings();
+}
+
+function fmtDate(d) { if(!d) return '—'; return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); }
+
+function fmtMonth(d) { if(!d) return '—'; return new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'long',year:'numeric'}); }
+
+function esc(s) { if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function uid() { return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36)+Math.random().toString(36).slice(2); }
+
+function statusBadge(s) {
+  const map = {'Not Started':'not-started','Pending Payment':'pending-pay','Pending Materials':'pending-mat','In Production':'in-production','Ready for Install':'ready','On Hold':'on-hold','Cancelled':'cancelled','Job Completed':'completed'};
+  return `<span class="badge badge-${map[s]||'not-started'}">${esc(s||'Not Started')}</span>`;
+}
+
+function toast(msg, dur=3000) {
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  document.body.appendChild(t); setTimeout(()=>t.remove(), dur);
+}
+
+function editProject(id){openProjectModal(id);}
+
+function closeProjModal(){document.getElementById('proj-modal').style.display='none';editingId=null;}
+
+async function deleteProject(id){
+  if(!confirm('Delete this project?'))return;
+  try { await dbDelete('projects',id); appData.projects=appData.projects.filter(p=>p.id!==id); renderProjects(); toast('Project deleted'); }
+  catch(e){ toast('Error deleting'); setSyncErr(); }
+}
+
+function editClient(id){openClientModal(id);}
+
+function closeClientModal(){document.getElementById('client-modal').style.display='none';editingId=null;}
+
+async function deleteClient(id){
+  if(!confirm('Delete this client?'))return;
+  try{await dbDelete('clients',id);appData.clients=appData.clients.filter(c=>c.id!==id);renderClients();toast('Client deleted');}
+  catch(e){toast('Error deleting');setSyncErr();}
+}
+
+function renderExpenses(){
+  const {expenses,projects}=appData;
+  const search=(document.getElementById('exp-search')?.value||'').toLowerCase();
+  const catF=document.getElementById('exp-filter-cat')?.value||'';
+  const projMap={};projects.forEach(p=>projMap[p.id]=p.description||(p.product_type||'Project'));
+  const rows=expenses.filter(e=>{
+    if(search&&!(e.description||'').toLowerCase().includes(search)&&!(e.category||'').toLowerCase().includes(search))return false;
+    if(catF&&e.category!==catF)return false;
+    return true;
+  });
+  const tbody=document.getElementById('exp-tbody');
+  if(!rows.length){tbody.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div style="font-size:32px">💸</div><p>No expenses logged</p></div></td></tr>`;return;}
+  tbody.innerHTML=rows.map(e=>`<tr>
+    <td style="font-size:12px">${fmtDate(e.date)}</td>
+    <td style="font-size:11px;color:var(--gray)">${e.project_id?esc(projMap[e.project_id]||'—'):'—'}</td>
+    <td><span class="badge" style="background:var(--wood-cream);color:var(--wood-mid);border:1px solid var(--border)">${esc(e.category)}</span></td>
+    <td>${esc(e.description)||'—'}</td>
+    <td style="font-family:var(--font-mono);font-weight:600;color:var(--red)">${fmt$(e.amount)}</td>
+    <td><button class="btn-action" onclick="editExpense('${e.id}')">Edit</button><button class="btn-action danger" onclick="deleteExpense('${e.id}')">Delete</button></td>
+  </tr>`).join('');
+}
+
+function editExpense(id){openExpenseModal(id);}
+
+function closeExpModal(){document.getElementById('exp-modal').style.display='none';editingId=null;}
+
+async function deleteExpense(id){
+  if(!confirm('Delete this expense?'))return;
+  try{await dbDelete('expenses',id);appData.expenses=appData.expenses.filter(e=>e.id!==id);renderExpenses();toast('Expense deleted');}
+  catch(e){toast('Error deleting');setSyncErr();}
+}
+
+function addUserRow(){
+  const s=getSettings();
+  const users=getUsers();
+  users.push({key:'user'+Date.now(),name:'New Member',pin:'0000',role:'member'});
+  s.users=users;
+  if(appData.settings)appData.settings.data=s;
+  renderUsersList();
+}
+
+function removeUserRow(i){
+  const s=getSettings();
+  const users=getUsers();
+  users.splice(i,1);
+  s.users=users;
+  if(appData.settings)appData.settings.data=s;
+  renderUsersList();
+}
+
+function getMileageRate() { return (getSettings().mileage_rate || 70) / 100; }
+
+function updateMileagePreview() {
+  const rate = getMileageRate();
+  const miles = parseFloat(document.getElementById('mf-miles')?.value)||0;
+  const el = document.getElementById('mil-deduction-preview');
+  const rateEl = document.getElementById('mil-rate-display');
+  if (el) el.textContent = fmt$(miles * rate);
+  if (rateEl) rateEl.textContent = (rate*100).toFixed(1) + '¢/mile';
+}
+
+function editMileage(id) { openMileageModal(id); }
+
+function closeMilModal() { document.getElementById('mil-modal').style.display = 'none'; editingId = null; }
+
+async function deleteMileage(id) {
+  if (!confirm('Delete this trip?')) return;
+  appData.mileage = appData.mileage.filter(m => m.id !== id);
+  renderMileage(); toast('Trip deleted');
+  try { await dbDelete('mileage', id); }
+  catch(e) { toast('Sync error'); setSyncErr(); }
+}
+
+function getBillDueThisMonth(bill, month, year) {
+  if (!bill.active) return null;
+  const freq = bill.due_type || 'Monthly';
+  if (freq === 'Annual') {
+    return bill.due_month === month ? bill.due_day : null;
+  }
+  if (freq === 'Biweekly') return bill.due_day; // show both halves
+  if (freq === 'Monthly' || freq === 'Quarterly') return bill.due_day;
+  return bill.due_day;
+}
+
+function getDaysUntilDue(bill) {
+  const now = new Date();
+  now.setHours(0,0,0,0);
+  const day = bill.due_day || 1;
+  const due = new Date(now.getFullYear(), now.getMonth(), day);
+  due.setHours(0,0,0,0);
+  return Math.ceil((due - now) / 86400000);
+}
+
+function isPaidThisMonth(bill, billPayments) {
+  const now = new Date();
+  return billPayments.some(p => {
+    if (p.bill_id !== bill.id) return false;
+    const d = new Date(p.paid_date + 'T12:00:00');
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+  });
+}
+
+function updateDueFields() {
+  const freq=document.getElementById('bf-freq')?.value;
+  const isCustom=freq==='Other'||freq==='Biweekly';
+  document.getElementById('bf-day-group').style.display=isCustom?'none':'block';
+  document.getElementById('bf-custom-group').style.display=isCustom?'block':'none';
+}
+
+function openBillPayModal(billId, billName, amount) {
+  payingBillId=billId;
+  document.getElementById('billpay-modal-title').textContent='Log Payment — '+billName;
+  document.getElementById('bp-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('bp-amount').value=amount||'';
+  document.getElementById('bp-notes').value='';
+  document.getElementById('billpay-modal').style.display='flex';
+}
+
+function closeBillPayModal(){document.getElementById('billpay-modal').style.display='none';payingBillId=null;}
+
+async function saveBillPayment(){
+  const date=document.getElementById('bp-date').value;
+  const amount=document.getElementById('bp-amount').value;
+  if(!date||!amount||!payingBillId){alert('Date and amount required.');return;}
+  const row={bill_id:payingBillId,paid_date:date,amount:parseFloat(amount),notes:document.getElementById('bp-notes').value.trim()};
+  const tempId='temp_'+Date.now();
+  appData.billPayments.unshift({id:tempId,...row});
+  closeBillPayModal();renderBills();toast('Payment logged ✓');
+  _suppressRefresh['bill_payments']=Date.now()+15000;
+  try{
+    const p=await dbInsert('bill_payments',row);
+    appData.billPayments=appData.billPayments.filter(x=>x.id!==tempId);
+    appData.billPayments.unshift(p);
+    renderBills();
+  }catch(e){toast('Sync error');setSyncErr();}
+}
+
+function editBill(id){openBillModal(id);}
+
+function closeBillModal(){document.getElementById('bill-modal').style.display='none';editingId=null;}
+
+async function deleteBill(id){
+  if(!confirm('Delete this bill and all its payment history?'))return;
+  appData.bills=appData.bills.filter(b=>b.id!==id);
+  appData.billPayments=appData.billPayments.filter(p=>p.bill_id!==id);
+  renderBills();toast('Bill deleted');
+  try{await dbDelete('bills',id);}catch(e){toast('Sync error');setSyncErr();}
+}
+
+function openCredPayModal(creditorId,name,minAmt){
+  payingCreditorId=creditorId;
+  document.getElementById('credpay-modal-title').textContent='Log Payment — '+name;
+  document.getElementById('cp-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('cp-amount').value=minAmt||'';
+  document.getElementById('cp-notes').value='';
+  document.getElementById('credpay-modal').style.display='flex';
+}
+
+function closeCredPayModal(){document.getElementById('credpay-modal').style.display='none';payingCreditorId=null;}
+
+function editCreditor(id){openCreditorModal(id);}
+
+function closeCreditorModal(){document.getElementById('creditor-modal').style.display='none';editingId=null;}
+
+async function deleteCreditor(id){
+  if(!confirm('Delete this creditor and all payment history?'))return;
+  appData.creditors=appData.creditors.filter(c=>c.id!==id);
+  appData.creditorPayments=appData.creditorPayments.filter(p=>p.creditor_id!==id);
+  renderCreditors();toast('Creditor deleted');
+  try{await dbDelete('creditors',id);}catch(e){toast('Sync error');setSyncErr();}
+}
+
+function getDeductibleInfo(person, year) {
+  const setting = appData.deductibles.find(d => d.person === person && d.year === +year);
+  if (!setting) return null;
+  const used = appData.medicalVisits
+    .filter(v => v.person === person && v.visit_year === +year && v.applied_to_deductible)
+    .reduce((s, v) => s + (+v.applied_to_deductible || 0), 0);
+  return { total: +setting.deductible_amount, used, remaining: Math.max(0, +setting.deductible_amount - used), met: used >= +setting.deductible_amount };
+}
+
+function renderDeductibleSettings(){
+  const {deductibles}=appData;
+  const el=document.getElementById('deductible-settings-list');
+  if(!el)return;
+  el.innerHTML=deductibles.map((d,i)=>`
+    <div class="setting-row">
+      <div style="display:flex;gap:8px;flex:1;flex-wrap:wrap;align-items:center">
+        <input class="setting-input" style="width:120px" value="${esc(d.person)}" id="ds-person-${i}" placeholder="Name">
+        <input class="setting-input" style="width:80px" value="${d.year||''}" id="ds-year-${i}" placeholder="Year" type="number">
+        <span style="font-size:12px;color:var(--gray)">Deductible:</span>
+        <input class="setting-input" style="width:100px" value="${d.deductible_amount||''}" id="ds-amt-${i}" placeholder="$0.00" type="number" step="0.01">
+      </div>
+      <button class="btn-action danger" onclick="removeDeductibleRow(${i})">Remove</button>
+    </div>`).join('')||'<div style="color:var(--gray);font-size:12px;padding:8px">No deductibles set yet.</div>';
+}
+
+function addDeductibleRow(){
+  appData.deductibles.push({id:'temp_'+Date.now(),person:'KC',year:new Date().getFullYear(),deductible_amount:0});
+  renderDeductibleSettings();
+}
+
+function removeDeductibleRow(i){
+  appData.deductibles.splice(i,1);
+  renderDeductibleSettings();
+}
+
+function renderSettings(){
+  _origRenderSettings();
+  renderDeductibleSettings();
+}
+
+function fillProviderFields() {
+  const sel = document.getElementById('mdf-provider-sel');
+  const id = sel?.value;
+  if (!id) return;
+  const p = appData.providers.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('mdf-provider').value = p.name||'';
+  document.getElementById('mdf-address').value  = p.address||'';
+  document.getElementById('mdf-phone').value    = p.phone||'';
+  document.getElementById('mdf-cat').value      = p.category||'Medical';
+}
+
+function showMedicalView(view) {
+  const isVisits = view === 'visits';
+  document.getElementById('med-visits-view').style.display = isVisits ? 'block' : 'none';
+  document.getElementById('med-providers-view').style.display = isVisits ? 'none' : 'block';
+  document.getElementById('med-view-visits').style.background = isVisits ? 'var(--wood-dark)' : 'transparent';
+  document.getElementById('med-view-visits').style.color = isVisits ? 'var(--wood-pale)' : 'var(--gray)';
+  document.getElementById('med-view-providers').style.background = isVisits ? 'transparent' : 'var(--wood-dark)';
+  document.getElementById('med-view-providers').style.color = isVisits ? 'var(--gray)' : 'var(--wood-pale)';
+  if (!isVisits) renderProviders();
+}
+
+function editProvider(id){openProviderModal(id);}
+
+function closeProviderModal(){document.getElementById('provider-modal').style.display='none';editingId=null;}
+
+async function deleteProvider(id){
+  if(!confirm('Delete this provider?'))return;
+  appData.providers=appData.providers.filter(p=>p.id!==id);
+  renderProviders();populateProviderDropdowns();toast('Provider deleted');
+  try{await dbDelete('providers',id);}catch(e){toast('Sync error');setSyncErr();}
+}
+
+function editAppt(id){openApptModal(id);}
+
+function closeApptModal(){document.getElementById('appt-modal').style.display='none';editingId=null;}
+
+async function deleteAppt(id){
+  if(!confirm('Delete this appointment?'))return;
+  appData.appointments=appData.appointments.filter(a=>a.id!==id);
+  renderProviders();toast('Appointment deleted');
+  try{await dbDelete('appointments',id);}catch(e){toast('Sync error');setSyncErr();}
+}
+
+function closeBillHistoryModal() {
+  document.getElementById('billhistory-modal').style.display = 'none';
+}
+
+function openEditBillPay(payId, date, amount, notes) {
+  editingPaymentId = payId;
+  document.getElementById('ebp-date').value = date;
+  document.getElementById('ebp-amount').value = amount;
+  document.getElementById('ebp-notes').value = notes;
+  document.getElementById('editbillpay-modal').style.display = 'flex';
+}
+
+function closeEditBillPayModal() {
+  document.getElementById('editbillpay-modal').style.display = 'none';
+  editingPaymentId = null;
+}
+
+async function deleteBillPayment(payId, billId) {
+  if (!confirm('Delete this payment record?')) return;
+  _suppressRefresh['bill_payments'] = Date.now() + 15000;
+  appData.billPayments = appData.billPayments.filter(p => p.id !== payId);
+  closeBillHistoryModal();
+  renderBills();
+  toast('Payment deleted');
+  try { await dbDelete('bill_payments', payId); }
+  catch(e) { toast('Sync error'); setSyncErr(); }
+}
+
+function editMedical(id) { openMedicalModal(id); }
+
+function closeMedicalModal() { document.getElementById('medical-modal').style.display = 'none'; editingId = null; }
+
+async function deleteMedical(id) {
+  if (!confirm('Delete this visit?')) return;
+  appData.medicalVisits = appData.medicalVisits.filter(v => v.id !== id);
+  renderMedical();
+  toast('Visit deleted');
+  try { await dbDelete('medical_visits', id); }
+  catch(e) { toast('Sync error'); setSyncErr(); }
+}
+
+</script>
+</body>
+</html>
