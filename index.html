@@ -681,6 +681,25 @@ body { font-family: var(--font-body); background: var(--wood-cream); color: var(
 
 
 <script>
+
+// Global error catcher - shows errors visibly
+window.addEventListener('error', function(e) {
+  const msg = e.message + ' (line ' + e.lineno + ')';
+  console.error('APP ERROR:', msg);
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:0;left:0;right:0;background:red;color:white;padding:12px;z-index:99999;font-size:13px;font-family:monospace';
+  div.textContent = 'JS Error: ' + msg;
+  document.body.appendChild(div);
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+  console.error('PROMISE ERROR:', e.reason);
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;top:40px;left:0;right:0;background:darkred;color:white;padding:12px;z-index:99999;font-size:13px;font-family:monospace';
+  div.textContent = 'Async Error: ' + (e.reason?.message || JSON.stringify(e.reason));
+  document.body.appendChild(div);
+});
+
 // ══════════════════════════════════════════════
 // CONFIG & STATE
 // ══════════════════════════════════════════════
@@ -755,22 +774,56 @@ async function connectSupabase(url, key) {
   }
 }
 
+
+// ── Data helpers (must be defined before loadAllData) ──
+
+function mergeData(fresh, local) {
+  const freshMap = new Map(fresh.map(r => [r.id, r]));
+  // Keep any local temp records not yet in DB
+  const temps = local.filter(r => String(r.id).startsWith('temp_'));
+  // Merge: fresh records + any temps not already replaced
+  return dedup([...fresh, ...temps]);
+}
+
+function dedupBy(arr, keyFn) {
+  const seen = new Set();
+  return arr.filter(item => {
+    const k = keyFn(item);
+    if (seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+}
+
+function dedup(arr) {
+  // First remove any temp_ placeholder records (real DB records replace them)
+  const realOnly = arr.filter(item => !String(item.id).startsWith('temp_'));
+  // Then deduplicate by real UUID, keeping first occurrence
+  const seen = new Set();
+  return realOnly.filter(item => {
+    if (seen.has(item.id)) return false;
+    seen.add(item.id);
+    return true;
+  });
+}
+
 async function loadAllData() {
   // Initial load only — no spinner after first boot
+  // Use allSettled so one missing table doesn't crash everything
+  const safe = async (q) => { try { return await q; } catch(e) { return {data:[],error:e}; } };
   const [projRes, clientRes, expRes, settRes, milRes, billsRes, billPayRes, credRes, credPayRes, medRes, dedRes, provRes, apptRes] = await Promise.all([
-    sb.from('projects').select('*').order('created_at', { ascending: false }),
-    sb.from('clients').select('*').order('name'),
-    sb.from('expenses').select('*').order('date', { ascending: false }),
-    sb.from('settings').select('*').limit(1),
-    sb.from('mileage').select('*').order('date', { ascending: false }),
-    sb.from('bills').select('*').order('name'),
-    sb.from('bill_payments').select('*').order('paid_date', { ascending: false }),
-    sb.from('creditors').select('*').order('current_balance', { ascending: false }),
-    sb.from('creditor_payments').select('*').order('paid_date', { ascending: false }),
-    sb.from('medical_visits').select('*').order('visit_date', { ascending: false }),
-    sb.from('deductible_settings').select('*'),
-    sb.from('providers').select('*').order('name'),
-    sb.from('appointments').select('*').order('appointment_date', { ascending: false }),
+    safe(sb.from('projects').select('*').order('created_at', { ascending: false })),
+    safe(sb.from('clients').select('*').order('name')),
+    safe(sb.from('expenses').select('*').order('date', { ascending: false })),
+    safe(sb.from('settings').select('*').limit(1)),
+    safe(sb.from('mileage').select('*').order('date', { ascending: false })),
+    safe(sb.from('bills').select('*').order('name')),
+    safe(sb.from('bill_payments').select('*').order('paid_date', { ascending: false })),
+    safe(sb.from('creditors').select('*').order('current_balance', { ascending: false })),
+    safe(sb.from('creditor_payments').select('*').order('paid_date', { ascending: false })),
+    safe(sb.from('medical_visits').select('*').order('visit_date', { ascending: false })),
+    safe(sb.from('deductible_settings').select('*')),
+    safe(sb.from('providers').select('*').order('name')),
+    safe(sb.from('appointments').select('*').order('appointment_date', { ascending: false })),
   ]);
   appData.projects  = dedup(projRes.data   || []);
   appData.clients   = dedup(clientRes.data || []);
@@ -2121,34 +2174,11 @@ function refreshTable(table) {
   _refreshTimers[table] = setTimeout(() => _doRefreshTable(table), 400);
 }
 
-function mergeData(fresh, local) {
-  const freshMap = new Map(fresh.map(r => [r.id, r]));
-  // Keep any local temp records not yet in DB
-  const temps = local.filter(r => String(r.id).startsWith('temp_'));
-  // Merge: fresh records + any temps not already replaced
-  return dedup([...fresh, ...temps]);
-}
 
-function dedupBy(arr, keyFn) {
-  const seen = new Set();
-  return arr.filter(item => {
-    const k = keyFn(item);
-    if (seen.has(k)) return false;
-    seen.add(k); return true;
-  });
-}
 
-function dedup(arr) {
-  // First remove any temp_ placeholder records (real DB records replace them)
-  const realOnly = arr.filter(item => !String(item.id).startsWith('temp_'));
-  // Then deduplicate by real UUID, keeping first occurrence
-  const seen = new Set();
-  return realOnly.filter(item => {
-    if (seen.has(item.id)) return false;
-    seen.add(item.id);
-    return true;
-  });
-}
+
+
+
 
 function setSyncing() { const d=document.getElementById('sync-dot'); const l=document.getElementById('sync-label'); if(d){d.className='sync-dot syncing';} if(l)l.textContent='Saving…'; }
 
@@ -2551,5 +2581,214 @@ async function deleteMedical(id) {
 }
 
 </script>
+
+<!-- MILEAGE MODAL -->
+<div class="modal-overlay" id="mil-modal" style="display:none" onclick="if(event.target===this)closeMilModal()">
+  <div class="modal">
+    <div class="modal-title" id="mil-modal-title">Add Trip</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date *</label><input id="mf-date" type="date"></div>
+      <div class="form-group"><label>Miles *</label><input id="mf-miles" type="number" step="0.1" min="0" placeholder="e.g. 12.5" oninput="updateMileagePreview()"></div>
+      <div class="form-group"><label>From</label><input id="mf-from" placeholder="Starting location"></div>
+      <div class="form-group"><label>To</label><input id="mf-to" placeholder="Destination"></div>
+      <div class="form-group"><label>Purpose</label>
+        <select id="mf-purpose">
+          <option>Client Visit</option><option>Material Pickup</option>
+          <option>Delivery / Install</option><option>Shop / Supplies</option>
+          <option>Other Business</option>
+        </select></div>
+      <div class="form-group"><label>Project (optional)</label>
+        <select id="mf-project"><option value="">—</option></select></div>
+      <div class="form-group full"><label>Notes</label><input id="mf-notes"></div>
+    </div>
+    <div style="margin-top:12px;padding:12px;background:var(--wood-cream);border-radius:8px;font-size:12px;color:var(--gray)">
+      Rate: <strong id="mil-rate-display"></strong> &nbsp;→&nbsp; Est. deduction: <strong id="mil-deduction-preview" style="color:var(--green)">$0.00</strong>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeMilModal()">Cancel</button>
+      <button class="btn-save" onclick="saveMileage()">Save Trip</button>
+    </div>
+  </div>
+</div>
+
+<!-- BILL MODAL -->
+<div class="modal-overlay" id="bill-modal" style="display:none" onclick="if(event.target===this)closeBillModal()">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title" id="bill-modal-title">Add Bill</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Bill Name *</label><input id="bf-name"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="bf-cat">
+          <option>Housing</option><option>Utilities</option><option>Insurance</option>
+          <option>Subscription</option><option>Transportation</option><option>Communication</option>
+          <option>Storage</option><option>Business</option><option>Credit Card</option>
+          <option>Grocery</option><option>Gas</option><option>Medical</option><option>Misc</option><option>Other</option>
+        </select></div>
+      <div class="form-group"><label>Amount ($)</label><input id="bf-amount" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Who Pays</label>
+        <select id="bf-who"><option>KC</option><option>Adrian</option><option>Stephanie</option><option>Shared</option></select></div>
+      <div class="form-group"><label>Autopay?</label>
+        <select id="bf-autopay"><option value="false">No</option><option value="true">Yes</option></select></div>
+      <div class="form-group"><label>Frequency</label>
+        <select id="bf-freq" onchange="updateDueFields()">
+          <option>Monthly</option><option>Biweekly</option><option>Annual</option><option>Quarterly</option><option>Other</option>
+        </select></div>
+      <div class="form-group" id="bf-day-group"><label>Due Day of Month</label>
+        <input id="bf-day" type="number" min="1" max="31" placeholder="e.g. 15"></div>
+      <div class="form-group" id="bf-custom-group" style="display:none"><label>Due Description</label>
+        <input id="bf-custom" placeholder="e.g. 4th Thursday"></div>
+      <div class="form-group"><label>Alert Days Before</label>
+        <input id="bf-alert" type="number" value="7" min="1" max="30"></div>
+      <div class="form-group"><label>Phone</label><input id="bf-phone" type="tel"></div>
+      <div class="form-group"><label>Website</label><input id="bf-website" placeholder="https://..."></div>
+      <div class="form-group full"><label>Account / Notes</label><textarea id="bf-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeBillModal()">Cancel</button>
+      <button class="btn-save" onclick="saveBill()">Save Bill</button>
+    </div>
+  </div>
+</div>
+
+<!-- BILL PAYMENT MODAL -->
+<div class="modal-overlay" id="billpay-modal" style="display:none" onclick="if(event.target===this)closeBillPayModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title" id="billpay-modal-title">Log Payment</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date Paid *</label><input id="bp-date" type="date"></div>
+      <div class="form-group"><label>Amount Paid ($) *</label><input id="bp-amount" type="number" step="0.01" min="0"></div>
+      <div class="form-group full"><label>Confirmation # / Notes</label><input id="bp-notes"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeBillPayModal()">Cancel</button>
+      <button class="btn-save" onclick="saveBillPayment()">Log Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- BILL HISTORY MODAL -->
+<div class="modal-overlay" id="billhistory-modal" style="display:none" onclick="if(event.target===this)closeBillHistoryModal()">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title" id="billhistory-title">Payment History</div>
+    <div id="billhistory-list"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeBillHistoryModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT BILL PAYMENT MODAL -->
+<div class="modal-overlay" id="editbillpay-modal" style="display:none" onclick="if(event.target===this)closeEditBillPayModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title">Edit Payment</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date Paid *</label><input id="ebp-date" type="date"></div>
+      <div class="form-group"><label>Amount ($) *</label><input id="ebp-amount" type="number" step="0.01"></div>
+      <div class="form-group full"><label>Confirmation # / Notes</label><input id="ebp-notes"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeEditBillPayModal()">Cancel</button>
+      <button class="btn-save" onclick="saveEditBillPay()">Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREDITOR MODAL -->
+<div class="modal-overlay" id="creditor-modal" style="display:none" onclick="if(event.target===this)closeCreditorModal()">
+  <div class="modal" style="max-width:600px">
+    <div class="modal-title" id="creditor-modal-title">Add Creditor</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Creditor Name *</label><input id="cr-name"></div>
+      <div class="form-group"><label>Type</label>
+        <select id="cr-type">
+          <option>Credit Card</option><option>Personal Loan</option><option>Auto Loan</option>
+          <option>Medical Debt</option><option>Student Loan</option><option>Other</option>
+        </select></div>
+      <div class="form-group"><label>Current Balance ($) *</label><input id="cr-balance" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Original Balance ($)</label><input id="cr-orig" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Interest Rate (%)</label><input id="cr-rate" type="number" step="0.01" min="0" max="100"></div>
+      <div class="form-group"><label>Minimum Payment ($)</label><input id="cr-min" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Due Day of Month</label><input id="cr-day" type="number" min="1" max="31"></div>
+      <div class="form-group"><label>Phone</label><input id="cr-phone" type="tel"></div>
+      <div class="form-group full"><label>Website / Account #</label><input id="cr-website"></div>
+      <div class="form-group full"><label>Notes</label><textarea id="cr-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeCreditorModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCreditor()">Save Creditor</button>
+    </div>
+  </div>
+</div>
+
+<!-- CREDITOR PAYMENT MODAL -->
+<div class="modal-overlay" id="credpay-modal" style="display:none" onclick="if(event.target===this)closeCredPayModal()">
+  <div class="modal" style="max-width:420px">
+    <div class="modal-title" id="credpay-modal-title">Log Payment</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Date Paid *</label><input id="cp-date" type="date"></div>
+      <div class="form-group"><label>Amount Paid ($) *</label><input id="cp-amount" type="number" step="0.01" min="0"></div>
+      <div class="form-group full"><label>Notes</label><input id="cp-notes"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeCredPayModal()">Cancel</button>
+      <button class="btn-save" onclick="saveCredPayment()">Log Payment</button>
+    </div>
+  </div>
+</div>
+
+<!-- MEDICAL MODAL -->
+<div class="modal-overlay" id="medical-modal" style="display:none" onclick="if(event.target===this)closeMedicalModal()">
+  <div class="modal" style="max-width:640px">
+    <div class="modal-title" id="medical-modal-title">Log Visit</div>
+    <div class="form-grid">
+      <div class="form-group"><label>Person *</label>
+        <select id="mdf-person" onchange="updateDeductiblePreview()"><option>KC</option><option>Adrian</option></select></div>
+      <div class="form-group"><label>Visit Date *</label><input id="mdf-date" type="date" onchange="updateDeductiblePreview()"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="mdf-cat"><option>Medical</option><option>Dental</option><option>Vision</option><option>Other</option></select></div>
+      <div class="form-group full"><label>Provider</label>
+        <select id="mdf-provider-sel" onchange="fillProviderFields()"><option value="">Select provider…</option></select></div>
+      <div class="form-group"><label>Provider Name (if not listed)</label><input id="mdf-provider"></div>
+      <div class="form-group full"><label>Address</label><input id="mdf-address"></div>
+      <div class="form-group"><label>Phone</label><input id="mdf-phone" type="tel"></div>
+      <div class="form-group"><label>Reason for Visit</label><input id="mdf-reason"></div>
+      <div class="form-group"><label>Copay ($)</label><input id="mdf-copay" type="number" step="0.01" min="0" oninput="updateDeductiblePreview()"></div>
+      <div class="form-group"><label>Amount You Paid ($)</label><input id="mdf-paid" type="number" step="0.01" min="0" oninput="updateDeductiblePreview()"></div>
+      <div class="form-group"><label>Amount Billed ($)</label><input id="mdf-billed" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Insurance Paid ($)</label><input id="mdf-ins" type="number" step="0.01" min="0"></div>
+      <div class="form-group"><label>Applied to Deductible ($)</label><input id="mdf-deductible" type="number" step="0.01" min="0" oninput="updateDeductiblePreview()"></div>
+      <div class="form-group full" id="mdf-ded-preview" style="padding:10px;background:var(--wood-cream);border-radius:8px;font-size:12px;color:var(--gray)"></div>
+      <div class="form-group full"><label>Notes</label><textarea id="mdf-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeMedicalModal()">Cancel</button>
+      <button class="btn-save" onclick="saveMedical()">Save Visit</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROVIDER MODAL -->
+<div class="modal-overlay" id="provider-modal" style="display:none" onclick="if(event.target===this)closeProviderModal()">
+  <div class="modal" style="max-width:560px">
+    <div class="modal-title" id="provider-modal-title">Add Provider</div>
+    <div class="form-grid">
+      <div class="form-group full"><label>Provider / Practice Name *</label><input id="pv-name"></div>
+      <div class="form-group"><label>Category</label>
+        <select id="pv-cat"><option>Medical</option><option>Dental</option><option>Vision</option><option>Other</option></select></div>
+      <div class="form-group"><label>Specialty</label><input id="pv-specialty" placeholder="e.g. Cardiologist"></div>
+      <div class="form-group full"><label>Address</label><input id="pv-address"></div>
+      <div class="form-group"><label>Phone</label><input id="pv-phone" type="tel"></div>
+      <div class="form-group"><label>Fax</label><input id="pv-fax"></div>
+      <div class="form-group"><label>Website</label><input id="pv-website"></div>
+      <div class="form-group"><label>Patient Portal</label><input id="pv-portal"></div>
+      <div class="form-group full"><label>Notes</label><textarea id="pv-notes" rows="2"></textarea></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeProviderModal()">Cancel</button>
+      <button class="btn-save" onclick="saveProvider()">Save Provider</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
