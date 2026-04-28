@@ -2683,12 +2683,10 @@ function doLogin() {
   err.textContent = '';
   _pendingUser = user;
   if (userHas2FA(userKey)) {
-    // Has 2FA — show verify modal
+    // Has 2FA enabled — require verification
     showTotpVerify();
-  } else if (getUsers().find(u=>u.key===userKey)?.role === 'admin' && !userHas2FA(userKey)) {
-    // Admin with no 2FA — offer to set it up
-    openTotpSetup(userKey, user.name);
   } else {
+    // No 2FA — log straight in (can enable in Settings)
     completeLogin(user);
   }
 }
