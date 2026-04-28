@@ -2991,11 +2991,17 @@ function removeDeductibleRow(i){
   renderDeductibleSettings();
 }
 
-function renderSettings(){
-  _origRenderSettings();
+function renderSettings() {
+  const s = getSettings();
+  document.getElementById('setting-limit').value     = s.monthly_limit || 1650;
+  document.getElementById('setting-threshold').value = s.near_threshold || 90;
+  document.getElementById('setting-mileage-rate').value = s.mileage_rate || 70;
+  document.getElementById('setting-url').value = localStorage.getItem('sb_url') || '';
+  document.getElementById('setting-key').value = localStorage.getItem('sb_key') || '';
+  renderUsersList();
   renderDeductibleSettings();
-
-  renderTotpSettings();}
+  renderTotpSettings();
+}
 
 function fillProviderFields() {
   const sel = document.getElementById('mdf-provider-sel');
