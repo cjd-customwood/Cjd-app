@@ -2249,28 +2249,52 @@ function updateDeductiblePreview() {
   }
 }
 
-async function saveSettings(){
-  await _origSaveSettings();
-  // Save deductible rows
-  const rows=appData.deductibles.map((d,i)=>({
-    ...d,
-    person:document.getElementById('ds-person-'+i)?.value||d.person,
-    year:+document.getElementById('ds-year-'+i)?.value||d.year,
-    deductible_amount:parseFloat(document.getElementById('ds-amt-'+i)?.value)||d.deductible_amount,
+async function saveSettings() {
+  // Save users and business settings
+  const users = getUsers().map((u,i) => ({
+    ...u,
+    name: document.getElementById('uname-'+i)?.value || u.name,
+    pin:  document.getElementById('upin-'+i)?.value  || u.pin,
+    role: document.getElementById('urole-'+i)?.value || u.role,
   }));
-  for(const row of rows){
-    try{
-      if(String(row.id).startsWith('temp_')){
-        const {id,...data}=row;
-        const created=await dbInsert('deductible_settings',data);
-        row.id=created.id;
+  const newSettings = {
+    users,
+    monthly_limit:   +document.getElementById('setting-limit').value     || 1650,
+    near_threshold:  +document.getElementById('setting-threshold').value  || 90,
+    mileage_rate:    +document.getElementById('setting-mileage-rate').value || 70,
+  };
+  try {
+    if (appData.settings?.id) {
+      await dbUpdate('settings', appData.settings.id, { data: newSettings });
+      appData.settings.data = newSettings;
+    }
+  } catch(e) { toast('Error saving settings'); setSyncErr(); return; }
+
+  // Save deductible rows
+  const rows = appData.deductibles.map((d,i) => ({
+    ...d,
+    person:             document.getElementById('ds-person-'+i)?.value || d.person,
+    year:              +document.getElementById('ds-year-'+i)?.value   || d.year,
+    deductible_amount: parseFloat(document.getElementById('ds-amt-'+i)?.value) || d.deductible_amount,
+  }));
+  for (const row of rows) {
+    try {
+      if (String(row.id).startsWith('temp_')) {
+        const {id, ...data} = row;
+        const created = await dbInsert('deductible_settings', data);
+        row.id = created.id;
       } else {
-        await dbUpdate('deductible_settings',row.id,{person:row.person,year:row.year,deductible_amount:row.deductible_amount});
+        await dbUpdate('deductible_settings', row.id, {
+          person: row.person, year: row.year, deductible_amount: row.deductible_amount
+        });
       }
-    }catch(e){console.warn('Deductible save error:',e);}
+    } catch(e) { console.warn('Deductible save error:', e); }
   }
-  appData.deductibles=rows;
-  toast('All settings saved ✓');
+  appData.deductibles = rows;
+
+  // Refresh login dropdown with new user names
+  showLoginScreen();
+  toast('Settings saved ✓');
 }
 
 function populateProviderDropdowns() {
@@ -2683,10 +2707,8 @@ function doLogin() {
   err.textContent = '';
   _pendingUser = user;
   if (userHas2FA(userKey)) {
-    // Has 2FA enabled — require verification
     showTotpVerify();
   } else {
-    // No 2FA — log straight in (can enable in Settings)
     completeLogin(user);
   }
 }
