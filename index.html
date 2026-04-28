@@ -6,7 +6,440 @@
 <title>CJD Custom Wood & Home Accessories</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">
+// ══════════════════════════════════════════════
+// INACTIVITY & AUTO SIGN-OUT
+// ══════════════════════════════════════════════
+function resetInactivityTimer() {
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(() => {
+    if (currentUser) showSessionExpired();
+  }, INACTIVITY_MS);
+}
+
+function startAbsoluteTimer() {
+  clearTimeout(_absoluteTimer);
+  _absoluteTimer = setTimeout(() => {
+    if (currentUser) showSessionExpired();
+  }, ABSOLUTE_MS);
+}
+
+function stopTimers() {
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_absoluteTimer);
+}
+
+function showSessionExpired() {
+  stopTimers();
+  currentUser = null;
+  localStorage.removeItem('cjd_session');
+  // Hide app, show expired modal
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('session-expired-modal').style.display = 'flex';
+}
+
+function handleSessionExpired() {
+  document.getElementById('session-expired-modal').style.display = 'none';
+  showLoginScreen();
+}
+
+// Track user activity — reset inactivity timer on any interaction
+['click','keydown','touchstart','mousemove','scroll'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    if (currentUser) resetInactivityTimer();
+  }, { passive: true });
+});
+
+// ══════════════════════════════════════════════
+// TOTP / 2FA
+// ══════════════════════════════════════════════
+function getTotpSecrets() {
+  try { return JSON.parse(localStorage.getItem('cjd_totp') || '{}'); }
+  catch { return {}; }
+}
+function saveTotpSecrets(obj) { localStorage.setItem('cjd_totp', JSON.stringify(obj)); }
+
+function userHas2FA(userKey) {
+  const secrets = getTotpSecrets();
+  return !!secrets[userKey];
+}
+
+function generateTotpSecret() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let secret = '';
+  const arr = new Uint8Array(20);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => secret += chars[b % chars.length]);
+  return secret;
+}
+
+function verifyTotpCode(secret, code) {
+  try {
+    const totp = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(secret), digits: 6, period: 30 });
+    // Check current window and ±1 period for clock skew
+    const current = totp.generate();
+    const prev = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(secret), digits: 6, period: 30 });
+    return totp.validate({ token: code, window: 1 }) !== null;
+  } catch(e) {
+    console.error('TOTP verify error:', e);
+    return false;
+  }
+}
+
+function openTotpSetup(userKey, userName) {
+  const secret = generateTotpSecret();
+  // Store temporarily
+  window._setupSecret = secret;
+  window._setupUserKey = userKey;
+
+  // Display secret text
+  document.getElementById('totp-secret-display').textContent = secret.match(/.{1,4}/g).join(' ');
+  document.getElementById('totp-confirm-code').value = '';
+  document.getElementById('totp-setup-error').textContent = '';
+
+  // Generate QR code using Google Charts API
+  const issuer = 'CJD Business';
+  const uri = encodeURIComponent(`otpauth://totp/${issuer}:${userName}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${uri}`;
+  document.getElementById('totp-qr').innerHTML = `<img src="${qrUrl}" width="200" height="200" style="border-radius:8px">`;
+
+  document.getElementById('totp-setup-modal').style.display = 'flex';
+}
+
+function skipTotpSetup() {
+  document.getElementById('totp-setup-modal').style.display = 'none';
+  window._setupSecret = null;
+  window._setupUserKey = null;
+  // Complete login without 2FA
+  if (_pendingUser) completeLogin(_pendingUser);
+}
+
+function confirmTotpSetup() {
+  const code = document.getElementById('totp-confirm-code').value.trim();
+  if (code.length !== 6) {
+    document.getElementById('totp-setup-error').textContent = 'Enter the 6-digit code from your app.';
+    return;
+  }
+  if (!verifyTotpCode(window._setupSecret, code)) {
+    document.getElementById('totp-setup-error').textContent = 'Code incorrect. Make sure your phone clock is accurate.';
+    return;
+  }
+  // Save secret
+  const secrets = getTotpSecrets();
+  secrets[window._setupUserKey] = window._setupSecret;
+  saveTotpSecrets(secrets);
+  document.getElementById('totp-setup-modal').style.display = 'none';
+  toast('2FA activated ✓');
+  if (_pendingUser) completeLogin(_pendingUser);
+}
+
+function showTotpVerify() {
+  document.getElementById('totp-verify-code').value = '';
+  document.getElementById('totp-verify-error').textContent = '';
+  document.getElementById('totp-verify-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('totp-verify-code').focus(), 100);
+}
+
+function verifyTotp() {
+  const code = document.getElementById('totp-verify-code').value.trim();
+  if (!_pendingUser) return;
+  const secrets = getTotpSecrets();
+  const secret = secrets[_pendingUser.key];
+  if (!secret) { completeLogin(_pendingUser); return; }
+  if (code.length !== 6) {
+    document.getElementById('totp-verify-error').textContent = 'Enter the 6-digit code.';
+    return;
+  }
+  if (!verifyTotpCode(secret, code)) {
+    document.getElementById('totp-verify-error').textContent = 'Incorrect code. Try again.';
+    return;
+  }
+  document.getElementById('totp-verify-modal').style.display = 'none';
+  completeLogin(_pendingUser);
+}
+
+function cancelTotpVerify() {
+  document.getElementById('totp-verify-modal').style.display = 'none';
+  _pendingUser = null;
+}
+
+// Allow Enter key in verify code field
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('totp-verify-modal').style.display !== 'none') verifyTotp();
+    if (document.getElementById('totp-setup-modal').style.display !== 'none') confirmTotpSetup();
+  }
+});
+
+function completeLogin(user) {
+  currentUser = user;
+  _pendingUser = null;
+  localStorage.setItem('cjd_session', JSON.stringify({key:user.key, name:user.name, role:user.role}));
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nav-user-name').textContent = user.name;
+  resetInactivityTimer();
+  startAbsoluteTimer();
+  initApp();
+}
+
+// ── 2FA settings render ───────────────────────────────────────────────────────
+function renderTotpSettings() {
+  const users = getUsers();
+  const secrets = getTotpSecrets();
+  const el = document.getElementById('totp-settings-list');
+  if (!el) return;
+  el.innerHTML = users.map(u => {
+    const has2FA = !!secrets[u.key];
+    return `<div class="setting-row">
+      <div class="setting-label">
+        <strong>${esc(u.name)}</strong>
+        <span>${has2FA ? '✅ 2FA enabled' : '⚠️ No 2FA — login with PIN only'}</span>
+      </div>
+      ${has2FA
+        ? `<button class="btn-action danger" onclick="disable2FA('${u.key}')">Remove 2FA</button>`
+        : `<button class="btn-action" onclick="setup2FA('${u.key}','${esc(u.name)}')">Enable 2FA</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function setup2FA(userKey, userName) {
+  _pendingUser = null; // not in login flow
+  window._setupSecret = null;
+  window._setupUserKey = userKey;
+  openTotpSetup(userKey, userName);
+  // Override skip to just close without completing login
+  window._fromSettings = true;
+}
+
+function disable2FA(userKey) {
+  if (!confirm('Remove 2FA for this user? They will only need their PIN to log in.')) return;
+  const secrets = getTotpSecrets();
+  delete secrets[userKey];
+  saveTotpSecrets(secrets);
+  renderTotpSettings();
+  toast('2FA removed');
+}
+
+</script>
+<script src="https://cdn.jsdelivr.net/npm/otpauth@9.3.6/dist/otpauth.umd.min.js">
+// ══════════════════════════════════════════════
+// INACTIVITY & AUTO SIGN-OUT
+// ══════════════════════════════════════════════
+function resetInactivityTimer() {
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(() => {
+    if (currentUser) showSessionExpired();
+  }, INACTIVITY_MS);
+}
+
+function startAbsoluteTimer() {
+  clearTimeout(_absoluteTimer);
+  _absoluteTimer = setTimeout(() => {
+    if (currentUser) showSessionExpired();
+  }, ABSOLUTE_MS);
+}
+
+function stopTimers() {
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_absoluteTimer);
+}
+
+function showSessionExpired() {
+  stopTimers();
+  currentUser = null;
+  localStorage.removeItem('cjd_session');
+  // Hide app, show expired modal
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('session-expired-modal').style.display = 'flex';
+}
+
+function handleSessionExpired() {
+  document.getElementById('session-expired-modal').style.display = 'none';
+  showLoginScreen();
+}
+
+// Track user activity — reset inactivity timer on any interaction
+['click','keydown','touchstart','mousemove','scroll'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    if (currentUser) resetInactivityTimer();
+  }, { passive: true });
+});
+
+// ══════════════════════════════════════════════
+// TOTP / 2FA
+// ══════════════════════════════════════════════
+function getTotpSecrets() {
+  try { return JSON.parse(localStorage.getItem('cjd_totp') || '{}'); }
+  catch { return {}; }
+}
+function saveTotpSecrets(obj) { localStorage.setItem('cjd_totp', JSON.stringify(obj)); }
+
+function userHas2FA(userKey) {
+  const secrets = getTotpSecrets();
+  return !!secrets[userKey];
+}
+
+function generateTotpSecret() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let secret = '';
+  const arr = new Uint8Array(20);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => secret += chars[b % chars.length]);
+  return secret;
+}
+
+function verifyTotpCode(secret, code) {
+  try {
+    const totp = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(secret), digits: 6, period: 30 });
+    // Check current window and ±1 period for clock skew
+    const current = totp.generate();
+    const prev = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(secret), digits: 6, period: 30 });
+    return totp.validate({ token: code, window: 1 }) !== null;
+  } catch(e) {
+    console.error('TOTP verify error:', e);
+    return false;
+  }
+}
+
+function openTotpSetup(userKey, userName) {
+  const secret = generateTotpSecret();
+  // Store temporarily
+  window._setupSecret = secret;
+  window._setupUserKey = userKey;
+
+  // Display secret text
+  document.getElementById('totp-secret-display').textContent = secret.match(/.{1,4}/g).join(' ');
+  document.getElementById('totp-confirm-code').value = '';
+  document.getElementById('totp-setup-error').textContent = '';
+
+  // Generate QR code using Google Charts API
+  const issuer = 'CJD Business';
+  const uri = encodeURIComponent(`otpauth://totp/${issuer}:${userName}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${uri}`;
+  document.getElementById('totp-qr').innerHTML = `<img src="${qrUrl}" width="200" height="200" style="border-radius:8px">`;
+
+  document.getElementById('totp-setup-modal').style.display = 'flex';
+}
+
+function skipTotpSetup() {
+  document.getElementById('totp-setup-modal').style.display = 'none';
+  window._setupSecret = null;
+  window._setupUserKey = null;
+  // Complete login without 2FA
+  if (_pendingUser) completeLogin(_pendingUser);
+}
+
+function confirmTotpSetup() {
+  const code = document.getElementById('totp-confirm-code').value.trim();
+  if (code.length !== 6) {
+    document.getElementById('totp-setup-error').textContent = 'Enter the 6-digit code from your app.';
+    return;
+  }
+  if (!verifyTotpCode(window._setupSecret, code)) {
+    document.getElementById('totp-setup-error').textContent = 'Code incorrect. Make sure your phone clock is accurate.';
+    return;
+  }
+  // Save secret
+  const secrets = getTotpSecrets();
+  secrets[window._setupUserKey] = window._setupSecret;
+  saveTotpSecrets(secrets);
+  document.getElementById('totp-setup-modal').style.display = 'none';
+  toast('2FA activated ✓');
+  if (_pendingUser) completeLogin(_pendingUser);
+}
+
+function showTotpVerify() {
+  document.getElementById('totp-verify-code').value = '';
+  document.getElementById('totp-verify-error').textContent = '';
+  document.getElementById('totp-verify-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('totp-verify-code').focus(), 100);
+}
+
+function verifyTotp() {
+  const code = document.getElementById('totp-verify-code').value.trim();
+  if (!_pendingUser) return;
+  const secrets = getTotpSecrets();
+  const secret = secrets[_pendingUser.key];
+  if (!secret) { completeLogin(_pendingUser); return; }
+  if (code.length !== 6) {
+    document.getElementById('totp-verify-error').textContent = 'Enter the 6-digit code.';
+    return;
+  }
+  if (!verifyTotpCode(secret, code)) {
+    document.getElementById('totp-verify-error').textContent = 'Incorrect code. Try again.';
+    return;
+  }
+  document.getElementById('totp-verify-modal').style.display = 'none';
+  completeLogin(_pendingUser);
+}
+
+function cancelTotpVerify() {
+  document.getElementById('totp-verify-modal').style.display = 'none';
+  _pendingUser = null;
+}
+
+// Allow Enter key in verify code field
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('totp-verify-modal').style.display !== 'none') verifyTotp();
+    if (document.getElementById('totp-setup-modal').style.display !== 'none') confirmTotpSetup();
+  }
+});
+
+function completeLogin(user) {
+  currentUser = user;
+  _pendingUser = null;
+  localStorage.setItem('cjd_session', JSON.stringify({key:user.key, name:user.name, role:user.role}));
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nav-user-name').textContent = user.name;
+  resetInactivityTimer();
+  startAbsoluteTimer();
+  initApp();
+}
+
+// ── 2FA settings render ───────────────────────────────────────────────────────
+function renderTotpSettings() {
+  const users = getUsers();
+  const secrets = getTotpSecrets();
+  const el = document.getElementById('totp-settings-list');
+  if (!el) return;
+  el.innerHTML = users.map(u => {
+    const has2FA = !!secrets[u.key];
+    return `<div class="setting-row">
+      <div class="setting-label">
+        <strong>${esc(u.name)}</strong>
+        <span>${has2FA ? '✅ 2FA enabled' : '⚠️ No 2FA — login with PIN only'}</span>
+      </div>
+      ${has2FA
+        ? `<button class="btn-action danger" onclick="disable2FA('${u.key}')">Remove 2FA</button>`
+        : `<button class="btn-action" onclick="setup2FA('${u.key}','${esc(u.name)}')">Enable 2FA</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function setup2FA(userKey, userName) {
+  _pendingUser = null; // not in login flow
+  window._setupSecret = null;
+  window._setupUserKey = userKey;
+  openTotpSetup(userKey, userName);
+  // Override skip to just close without completing login
+  window._fromSettings = true;
+}
+
+function disable2FA(userKey) {
+  if (!confirm('Remove 2FA for this user? They will only need their PIN to log in.')) return;
+  const secrets = getTotpSecrets();
+  delete secrets[userKey];
+  saveTotpSecrets(secrets);
+  renderTotpSettings();
+  toast('2FA removed');
+}
+
+</script>
 <style>
 :root {
   --wood-dark: #3D2B1F;
@@ -627,6 +1060,10 @@ body { font-family: var(--font-body); background: var(--wood-cream); color: var(
         <div id="deductible-settings-list"></div>
         <button class="btn-add" style="margin-top:12px;margin-left:0" onclick="addDeductibleRow()">+ Add Person / Year</button>
       </div>
+      <div class="settings-section">
+        <h3>Two-Factor Authentication</h3>
+        <div id="totp-settings-list"></div>
+      </div>
       <button class="btn-save" onclick="saveSettings()">Save All Settings</button>
     </div>
   </div>
@@ -732,6 +1169,11 @@ let currentUser = null;
 let editingId = null;
 let appData = { projects: [], clients: [], expenses: [], mileage: [], settings: null, bills: [], billPayments: [], creditors: [], creditorPayments: [], medicalVisits: [], deductibles: [], providers: [], appointments: [] };
 let realtimeChannel = null;
+let _inactivityTimer = null;
+let _absoluteTimer = null;
+const INACTIVITY_MS = 30 * 60 * 1000;  // 30 minutes
+const ABSOLUTE_MS   = 60 * 60 * 1000;  // 60 minutes
+let _pendingUser = null; // user waiting for 2FA verification
 
 const BILL_PAYERS = ['KC', 'Adrian', 'Stephanie'];
 const STATUS_COLORS = {
@@ -789,6 +1231,8 @@ async function connectSupabase(url, key) {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
         document.getElementById('nav-user-name').textContent = currentUser.name;
+        resetInactivityTimer();
+        startAbsoluteTimer();
         initApp();
       } catch(e) {
         localStorage.removeItem('cjd_session');
@@ -2236,16 +2680,23 @@ function doLogin() {
   const users = getUsers();
   const user = users.find(u => u.key === userKey);
   if (!user || pin !== user.pin) { err.textContent = 'Incorrect PIN. Try again.'; return; }
-  currentUser = user;
-  localStorage.setItem('cjd_session', JSON.stringify({key:user.key,name:user.name,role:user.role}));
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('nav-user-name').textContent = user.name;
-  initApp();
+  err.textContent = '';
+  _pendingUser = user;
+  if (userHas2FA(userKey)) {
+    // Has 2FA — show verify modal
+    showTotpVerify();
+  } else if (getUsers().find(u=>u.key===userKey)?.role === 'admin' && !userHas2FA(userKey)) {
+    // Admin with no 2FA — offer to set it up
+    openTotpSetup(userKey, user.name);
+  } else {
+    completeLogin(user);
+  }
 }
 
 function doLogout() {
+  stopTimers();
   currentUser = null;
+  _pendingUser = null;
   localStorage.removeItem('cjd_session');
   document.getElementById('app').style.display = 'none';
   document.getElementById('login-pin').value = '';
@@ -2523,7 +2974,8 @@ function removeDeductibleRow(i){
 function renderSettings(){
   _origRenderSettings();
   renderDeductibleSettings();
-}
+
+  renderTotpSettings();}
 
 function fillProviderFields() {
   const sel = document.getElementById('mdf-provider-sel');
@@ -2609,6 +3061,222 @@ async function deleteMedical(id) {
   toast('Visit deleted');
   try { await dbDelete('medical_visits', id); }
   catch(e) { toast('Sync error'); setSyncErr(); }
+}
+
+
+// ══════════════════════════════════════════════
+// INACTIVITY & AUTO SIGN-OUT
+// ══════════════════════════════════════════════
+function resetInactivityTimer() {
+  clearTimeout(_inactivityTimer);
+  _inactivityTimer = setTimeout(() => {
+    if (currentUser) showSessionExpired();
+  }, INACTIVITY_MS);
+}
+
+function startAbsoluteTimer() {
+  clearTimeout(_absoluteTimer);
+  _absoluteTimer = setTimeout(() => {
+    if (currentUser) showSessionExpired();
+  }, ABSOLUTE_MS);
+}
+
+function stopTimers() {
+  clearTimeout(_inactivityTimer);
+  clearTimeout(_absoluteTimer);
+}
+
+function showSessionExpired() {
+  stopTimers();
+  currentUser = null;
+  localStorage.removeItem('cjd_session');
+  // Hide app, show expired modal
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('session-expired-modal').style.display = 'flex';
+}
+
+function handleSessionExpired() {
+  document.getElementById('session-expired-modal').style.display = 'none';
+  showLoginScreen();
+}
+
+// Track user activity — reset inactivity timer on any interaction
+['click','keydown','touchstart','mousemove','scroll'].forEach(evt => {
+  document.addEventListener(evt, () => {
+    if (currentUser) resetInactivityTimer();
+  }, { passive: true });
+});
+
+// ══════════════════════════════════════════════
+// TOTP / 2FA
+// ══════════════════════════════════════════════
+function getTotpSecrets() {
+  try { return JSON.parse(localStorage.getItem('cjd_totp') || '{}'); }
+  catch { return {}; }
+}
+function saveTotpSecrets(obj) { localStorage.setItem('cjd_totp', JSON.stringify(obj)); }
+
+function userHas2FA(userKey) {
+  const secrets = getTotpSecrets();
+  return !!secrets[userKey];
+}
+
+function generateTotpSecret() {
+  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
+  let secret = '';
+  const arr = new Uint8Array(20);
+  crypto.getRandomValues(arr);
+  arr.forEach(b => secret += chars[b % chars.length]);
+  return secret;
+}
+
+function verifyTotpCode(secret, code) {
+  try {
+    const totp = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(secret), digits: 6, period: 30 });
+    // Check current window and ±1 period for clock skew
+    const current = totp.generate();
+    const prev = new OTPAuth.TOTP({ secret: OTPAuth.Secret.fromBase32(secret), digits: 6, period: 30 });
+    return totp.validate({ token: code, window: 1 }) !== null;
+  } catch(e) {
+    console.error('TOTP verify error:', e);
+    return false;
+  }
+}
+
+function openTotpSetup(userKey, userName) {
+  const secret = generateTotpSecret();
+  // Store temporarily
+  window._setupSecret = secret;
+  window._setupUserKey = userKey;
+
+  // Display secret text
+  document.getElementById('totp-secret-display').textContent = secret.match(/.{1,4}/g).join(' ');
+  document.getElementById('totp-confirm-code').value = '';
+  document.getElementById('totp-setup-error').textContent = '';
+
+  // Generate QR code using Google Charts API
+  const issuer = 'CJD Business';
+  const uri = encodeURIComponent(`otpauth://totp/${issuer}:${userName}?secret=${secret}&issuer=${issuer}&algorithm=SHA1&digits=6&period=30`);
+  const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${uri}`;
+  document.getElementById('totp-qr').innerHTML = `<img src="${qrUrl}" width="200" height="200" style="border-radius:8px">`;
+
+  document.getElementById('totp-setup-modal').style.display = 'flex';
+}
+
+function skipTotpSetup() {
+  document.getElementById('totp-setup-modal').style.display = 'none';
+  window._setupSecret = null;
+  window._setupUserKey = null;
+  // Complete login without 2FA
+  if (_pendingUser) completeLogin(_pendingUser);
+}
+
+function confirmTotpSetup() {
+  const code = document.getElementById('totp-confirm-code').value.trim();
+  if (code.length !== 6) {
+    document.getElementById('totp-setup-error').textContent = 'Enter the 6-digit code from your app.';
+    return;
+  }
+  if (!verifyTotpCode(window._setupSecret, code)) {
+    document.getElementById('totp-setup-error').textContent = 'Code incorrect. Make sure your phone clock is accurate.';
+    return;
+  }
+  // Save secret
+  const secrets = getTotpSecrets();
+  secrets[window._setupUserKey] = window._setupSecret;
+  saveTotpSecrets(secrets);
+  document.getElementById('totp-setup-modal').style.display = 'none';
+  toast('2FA activated ✓');
+  if (_pendingUser) completeLogin(_pendingUser);
+}
+
+function showTotpVerify() {
+  document.getElementById('totp-verify-code').value = '';
+  document.getElementById('totp-verify-error').textContent = '';
+  document.getElementById('totp-verify-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('totp-verify-code').focus(), 100);
+}
+
+function verifyTotp() {
+  const code = document.getElementById('totp-verify-code').value.trim();
+  if (!_pendingUser) return;
+  const secrets = getTotpSecrets();
+  const secret = secrets[_pendingUser.key];
+  if (!secret) { completeLogin(_pendingUser); return; }
+  if (code.length !== 6) {
+    document.getElementById('totp-verify-error').textContent = 'Enter the 6-digit code.';
+    return;
+  }
+  if (!verifyTotpCode(secret, code)) {
+    document.getElementById('totp-verify-error').textContent = 'Incorrect code. Try again.';
+    return;
+  }
+  document.getElementById('totp-verify-modal').style.display = 'none';
+  completeLogin(_pendingUser);
+}
+
+function cancelTotpVerify() {
+  document.getElementById('totp-verify-modal').style.display = 'none';
+  _pendingUser = null;
+}
+
+// Allow Enter key in verify code field
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    if (document.getElementById('totp-verify-modal').style.display !== 'none') verifyTotp();
+    if (document.getElementById('totp-setup-modal').style.display !== 'none') confirmTotpSetup();
+  }
+});
+
+function completeLogin(user) {
+  currentUser = user;
+  _pendingUser = null;
+  localStorage.setItem('cjd_session', JSON.stringify({key:user.key, name:user.name, role:user.role}));
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('nav-user-name').textContent = user.name;
+  resetInactivityTimer();
+  startAbsoluteTimer();
+  initApp();
+}
+
+// ── 2FA settings render ───────────────────────────────────────────────────────
+function renderTotpSettings() {
+  const users = getUsers();
+  const secrets = getTotpSecrets();
+  const el = document.getElementById('totp-settings-list');
+  if (!el) return;
+  el.innerHTML = users.map(u => {
+    const has2FA = !!secrets[u.key];
+    return `<div class="setting-row">
+      <div class="setting-label">
+        <strong>${esc(u.name)}</strong>
+        <span>${has2FA ? '✅ 2FA enabled' : '⚠️ No 2FA — login with PIN only'}</span>
+      </div>
+      ${has2FA
+        ? `<button class="btn-action danger" onclick="disable2FA('${u.key}')">Remove 2FA</button>`
+        : `<button class="btn-action" onclick="setup2FA('${u.key}','${esc(u.name)}')">Enable 2FA</button>`
+      }
+    </div>`;
+  }).join('');
+}
+
+function setup2FA(userKey, userName) {
+  _pendingUser = null; // not in login flow
+  window._setupSecret = null;
+  window._setupUserKey = userKey;
+  openTotpSetup(userKey, userName);
+  // Override skip to just close without completing login
+  window._fromSettings = true;
+}
+
+function disable2FA(userKey) {
+  if (!confirm('Remove 2FA for this user? They will only need their PIN to log in.')) return;
+  const secrets = getTotpSecrets();
+  delete secrets[userKey];
+  saveTotpSecrets(secrets);
+  renderTotpSettings();
+  toast('2FA removed');
 }
 
 </script>
@@ -3005,5 +3673,53 @@ async function deleteMedical(id) {
   </div>
 </div>
 
+
+<!-- 2FA SETUP MODAL -->
+<div class="modal-overlay" id="totp-setup-modal" style="display:none">
+  <div class="modal" style="max-width:440px;text-align:center">
+    <div class="modal-title" style="text-align:left">Set Up Two-Factor Authentication</div>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:16px;text-align:left">
+      Install <strong>Google Authenticator</strong> or <strong>Microsoft Authenticator</strong> on your phone, then scan this QR code.
+    </p>
+    <div id="totp-qr" style="margin:0 auto 16px;width:200px;height:200px;background:var(--wood-cream);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;color:var(--gray)">Generating QR code...</div>
+    <p style="font-size:11px;color:var(--gray);margin-bottom:8px">Or enter this key manually:</p>
+    <div id="totp-secret-display" style="font-family:var(--font-mono);font-size:13px;background:var(--wood-cream);padding:8px 12px;border-radius:6px;margin-bottom:16px;letter-spacing:2px"></div>
+    <p style="font-size:12px;color:var(--wood-dark);margin-bottom:8px;text-align:left"><strong>Enter the 6-digit code from the app to confirm setup:</strong></p>
+    <input id="totp-confirm-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000"
+      style="width:100%;padding:12px;border:1.5px solid var(--border);border-radius:8px;font-size:24px;letter-spacing:8px;text-align:center;font-family:var(--font-mono);background:var(--wood-cream);outline:none;margin-bottom:8px">
+    <div class="login-error" id="totp-setup-error"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="skipTotpSetup()">Skip for now</button>
+      <button class="btn-save" onclick="confirmTotpSetup()">Activate 2FA</button>
+    </div>
+  </div>
+</div>
+
+<!-- 2FA VERIFY MODAL -->
+<div class="modal-overlay" id="totp-verify-modal" style="display:none">
+  <div class="modal" style="max-width:380px;text-align:center">
+    <div class="modal-title" style="text-align:left">Two-Factor Verification</div>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:20px;text-align:left">
+      Open your authenticator app and enter the 6-digit code.
+    </p>
+    <input id="totp-verify-code" type="text" inputmode="numeric" maxlength="6" placeholder="000000"
+      style="width:100%;padding:16px;border:1.5px solid var(--border);border-radius:8px;font-size:32px;letter-spacing:10px;text-align:center;font-family:var(--font-mono);background:var(--wood-cream);outline:none;margin-bottom:8px">
+    <div class="login-error" id="totp-verify-error"></div>
+    <div class="modal-actions" style="justify-content:center">
+      <button class="btn-save" style="width:100%" onclick="verifyTotp()">Verify</button>
+    </div>
+    <button onclick="cancelTotpVerify()" style="background:none;border:none;color:var(--gray);font-size:12px;cursor:pointer;margin-top:8px">← Back to login</button>
+  </div>
+</div>
+
+<!-- SESSION EXPIRED MODAL -->
+<div class="modal-overlay" id="session-expired-modal" style="display:none">
+  <div class="modal" style="max-width:340px;text-align:center">
+    <div style="font-size:40px;margin-bottom:12px">🔒</div>
+    <div class="modal-title" style="text-align:center;border:none;margin-bottom:8px">Session Expired</div>
+    <p style="font-size:13px;color:var(--gray);margin-bottom:20px">You've been signed out due to inactivity.</p>
+    <button class="btn-save" style="width:100%" onclick="handleSessionExpired()">Sign Back In</button>
+  </div>
+</div>
 </body>
 </html>
