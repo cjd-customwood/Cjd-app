@@ -558,6 +558,30 @@ body { font-family: var(--font-body); background: var(--wood-cream); color: var(
           </tr></thead><tbody id="medical-tbody"></tbody></table>
         </div>
       </div>
+      </div><!-- end med-visits-view -->
+
+      <!-- Providers view inside Medical tab -->
+      <div id="med-providers-view" style="display:none">
+        <div class="section-header" style="margin-top:0">
+          <div style="font-family:var(--font-display);font-size:16px;font-weight:700">Providers</div>
+          <button class="btn-add" onclick="openProviderModal()">+ Add Provider</button>
+        </div>
+        <div class="table-wrap">
+          <div class="table-toolbar">
+            <input class="search-input" placeholder="Search providers…" oninput="renderProviders()" id="prov-search">
+            <select class="filter-select" onchange="renderProviders()" id="prov-filter-cat">
+              <option value="">All Categories</option>
+              <option>Medical</option><option>Dental</option><option>Vision</option><option>Other</option>
+            </select>
+          </div>
+          <div style="overflow-x:auto">
+            <table class="data-table"><thead><tr>
+              <th>Provider / Practice</th><th>Category</th><th>Specialty</th>
+              <th>Address</th><th>Phone</th><th>Portal / Website</th><th>Last Visit</th><th>Actions</th>
+            </tr></thead><tbody id="providers-tbody"></tbody></table>
+          </div>
+        </div>
+      </div>
     </div>
 
 
@@ -2977,29 +3001,6 @@ async function deleteMedical(id) {
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeMedicalModal()">Cancel</button>
       <button class="btn-save" onclick="saveMedical()">Save Visit</button>
-    </div>
-  </div>
-</div>
-
-<!-- PROVIDER MODAL -->
-<div class="modal-overlay" id="provider-modal" style="display:none" onclick="if(event.target===this)closeProviderModal()">
-  <div class="modal" style="max-width:560px">
-    <div class="modal-title" id="provider-modal-title">Add Provider</div>
-    <div class="form-grid">
-      <div class="form-group full"><label>Provider / Practice Name *</label><input id="pv-name"></div>
-      <div class="form-group"><label>Category</label>
-        <select id="pv-cat"><option>Medical</option><option>Dental</option><option>Vision</option><option>Other</option></select></div>
-      <div class="form-group"><label>Specialty</label><input id="pv-specialty" placeholder="e.g. Cardiologist"></div>
-      <div class="form-group full"><label>Address</label><input id="pv-address"></div>
-      <div class="form-group"><label>Phone</label><input id="pv-phone" type="tel"></div>
-      <div class="form-group"><label>Fax</label><input id="pv-fax"></div>
-      <div class="form-group"><label>Website</label><input id="pv-website"></div>
-      <div class="form-group"><label>Patient Portal</label><input id="pv-portal"></div>
-      <div class="form-group full"><label>Notes</label><textarea id="pv-notes" rows="2"></textarea></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeProviderModal()">Cancel</button>
-      <button class="btn-save" onclick="saveProvider()">Save Provider</button>
     </div>
   </div>
 </div>
