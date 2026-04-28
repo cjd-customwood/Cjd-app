@@ -2689,21 +2689,38 @@ function getSettings() { return (appData.settings?.data) || DEFAULT_SETTINGS; }
 
 function getUsers() { return getSettings().users || DEFAULT_SETTINGS.users; }
 
-function showLoginScreen() {
+async function showLoginScreen() {
+  // Refresh settings from Supabase so user list is always current
+  try {
+    const { data } = await sb.from('settings').select('*').limit(1);
+    if (data && data[0]) appData.settings = data[0];
+  } catch(e) { console.warn('Could not refresh settings for login:', e); }
   const users = getUsers();
   const sel = document.getElementById('login-user');
   sel.innerHTML = '<option value="">Select...</option>' + users.map(u=>`<option value="${esc(u.key)}">${esc(u.name)}</option>`).join('');
   document.getElementById('login-screen').style.display = 'flex';
 }
 
-function doLogin() {
+async function doLogin() {
   const userKey = document.getElementById('login-user').value;
   const pin = document.getElementById('login-pin').value;
   const err = document.getElementById('login-error');
   if (!userKey) { err.textContent = 'Please select a user.'; return; }
+  
+  // Always fetch fresh settings from Supabase before checking PIN
+  try {
+    const { data } = await sb.from('settings').select('*').limit(1);
+    if (data && data[0]) {
+      appData.settings = data[0];
+    }
+  } catch(e) { console.warn('Could not refresh settings:', e); }
+  
   const users = getUsers();
   const user = users.find(u => u.key === userKey);
-  if (!user || pin !== user.pin) { err.textContent = 'Incorrect PIN. Try again.'; return; }
+  if (!user || pin !== user.pin) { 
+    err.textContent = 'Incorrect PIN. Try again.'; 
+    return; 
+  }
   err.textContent = '';
   _pendingUser = user;
   if (userHas2FA(userKey)) {
