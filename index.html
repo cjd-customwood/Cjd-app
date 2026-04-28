@@ -3255,18 +3255,22 @@ document.addEventListener('keydown', e => {
 });
 
 function completeLogin(user) {
-  currentUser = user;
-  _pendingUser = null;
-  localStorage.setItem('cjd_session', JSON.stringify({key:user.key, name:user.name, role:user.role}));
-  document.getElementById('login-screen').style.display = 'none';
-  document.getElementById('app').style.display = 'block';
-  document.getElementById('nav-user-name').textContent = user.name;
-  resetInactivityTimer();
-  startAbsoluteTimer();
-  initApp();
+  try {
+    currentUser = user;
+    _pendingUser = null;
+    localStorage.setItem('cjd_session', JSON.stringify({key:user.key, name:user.name, role:user.role}));
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('nav-user-name').textContent = user.name;
+    try { resetInactivityTimer(); } catch(e) { console.warn('Timer error:', e); }
+    try { startAbsoluteTimer(); } catch(e) { console.warn('Timer error:', e); }
+    initApp();
+  } catch(e) {
+    console.error('completeLogin error:', e);
+    document.getElementById('login-error').textContent = 'Login error: ' + e.message;
+  }
 }
 
-// ── 2FA settings render ───────────────────────────────────────────────────────
 function renderTotpSettings() {
   const users = getUsers();
   const secrets = getTotpSecrets();
