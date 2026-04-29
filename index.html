@@ -1570,34 +1570,46 @@ function renderProjects() {
 }
 
 function openProjectModal(id) {
-  editingId=id||null;
-  const {clients}=appData;
-  const cfSel=document.getElementById('pf-client');
-  cfSel.innerHTML='<option value="">Select client…</option>'+clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
-  document.getElementById('proj-modal-title').textContent=id?'Edit Project':'Add Project';
-  ['pf-desc','pf-type','pf-invoice','pf-price','pf-deposit','pf-dep-date','pf-paid-date','pf-notes'].forEach(f=>document.getElementById(f).value='');
-  document.getElementById('pf-client').value='';
-  document.getElementById('pf-status').value='Not Started';
-  document.getElementById('pf-wave').value='';
-  document.getElementById('pf-assigned').value='';
-  if(id){
-    const p=appData.projects.find(x=>x.id===id);
-    if(p){
-      document.getElementById('pf-client').value=p.client_id||'';
-      document.getElementById('pf-desc').value=p.description||'';
-      document.getElementById('pf-type').value=p.product_type||'';
-      document.getElementById('pf-assigned').value=p.assigned_to||'';
-      document.getElementById('pf-status').value=p.status||'Not Started';
-      document.getElementById('pf-invoice').value=p.wave_invoice||'';
-      document.getElementById('pf-price').value=p.price||'';
-      document.getElementById('pf-deposit').value=p.deposit||'';
-      document.getElementById('pf-dep-date').value=p.deposit_date||'';
-      document.getElementById('pf-paid-date').value=p.paid_date||'';
-      document.getElementById('pf-wave').value=p.wave_check||'';
-      document.getElementById('pf-notes').value=p.notes||'';
+  editingId = id || null;
+  const {clients} = appData;
+
+  // Populate client dropdown
+  const cfSel = document.getElementById('pf-client');
+  cfSel.innerHTML = '<option value="">Select client…</option>' + clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
+
+  // Populate assigned dropdown with current users
+  const users = getUsers();
+  const assignedSel = document.getElementById('pf-assigned');
+  assignedSel.innerHTML = '<option value="">Unassigned</option>' + users.map(u=>`<option value="${esc(u.name)}">${esc(u.name)}</option>`).join('');
+
+  document.getElementById('proj-modal-title').textContent = id ? 'Edit Project' : 'Add Project';
+
+  // Clear all fields first
+  ['pf-desc','pf-type','pf-invoice','pf-price','pf-deposit','pf-dep-date','pf-paid-date','pf-notes'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('pf-client').value  = '';
+  document.getElementById('pf-status').value  = 'Not Started';
+  document.getElementById('pf-wave').value    = '';
+  document.getElementById('pf-assigned').value = '';
+
+  // Populate fields if editing
+  if (id) {
+    const p = appData.projects.find(x => x.id === id);
+    if (p) {
+      document.getElementById('pf-client').value   = p.client_id || '';
+      document.getElementById('pf-desc').value     = p.description || '';
+      document.getElementById('pf-type').value     = p.product_type || '';
+      document.getElementById('pf-assigned').value = p.assigned_to || '';
+      document.getElementById('pf-status').value   = p.status || 'Not Started';
+      document.getElementById('pf-invoice').value  = p.wave_invoice || '';
+      document.getElementById('pf-price').value    = p.price || '';
+      document.getElementById('pf-deposit').value  = p.deposit || '';
+      document.getElementById('pf-dep-date').value = p.deposit_date || '';
+      document.getElementById('pf-paid-date').value= p.paid_date || '';
+      document.getElementById('pf-wave').value     = p.wave_check || '';
+      document.getElementById('pf-notes').value    = p.notes || '';
     }
   }
-  document.getElementById('proj-modal').style.display='flex';
+  document.getElementById('proj-modal').style.display = 'flex';
 }
 
 async function saveProject(){
@@ -1659,12 +1671,21 @@ function renderClients(){
   }).join('');
 }
 
-function openClientModal(id){
-  editingId=id||null;
-  document.getElementById('client-modal-title').textContent=id?'Edit Client':'Add Client';
-  ['cf-name','cf-phone','cf-email','cf-address','cf-notes'].forEach(f=>document.getElementById(f).value='');
-  if(id){const c=appData.clients.find(x=>x.id===id);if(c){document.getElementById('cf-name').value=c.name||'';document.getElementById('cf-phone').value=c.phone||'';document.getElementById('cf-email').value=c.email||'';document.getElementById('cf-address').value=c.address||'';document.getElementById('cf-notes').value=c.notes||'';}}
-  document.getElementById('client-modal').style.display='flex';
+function openClientModal(id) {
+  editingId = id || null;
+  document.getElementById('client-modal-title').textContent = id ? 'Edit Client' : 'Add Client';
+  ['cf-name','cf-phone','cf-email','cf-address','cf-notes'].forEach(f => document.getElementById(f).value = '');
+  if (id) {
+    const c = appData.clients.find(x => x.id === id);
+    if (c) {
+      document.getElementById('cf-name').value    = c.name || '';
+      document.getElementById('cf-phone').value   = c.phone || '';
+      document.getElementById('cf-email').value   = c.email || '';
+      document.getElementById('cf-address').value = c.address || '';
+      document.getElementById('cf-notes').value   = c.notes || '';
+    }
+  }
+  document.getElementById('client-modal').style.display = 'flex';
 }
 
 async function saveClient(){
@@ -1692,18 +1713,28 @@ async function saveClient(){
   } catch(e){ toast('Sync error — check connection'); setSyncErr(); }
 }
 
-function openExpenseModal(id){
-  editingId=id||null;
-  const {projects}=appData;
-  document.getElementById('ef-project').innerHTML='<option value="">—</option>'+projects.map(p=>`<option value="${p.id}">${esc(p.description||p.product_type||'Project')}</option>`).join('');
-  document.getElementById('exp-modal-title').textContent=id?'Edit Expense':'Add Expense';
-  ['ef-desc'].forEach(f=>document.getElementById(f).value='');
-  document.getElementById('ef-amount').value='';
-  document.getElementById('ef-category').value='Materials';
-  document.getElementById('ef-project').value='';
-  if(!id)document.getElementById('ef-date').value=new Date().toISOString().split('T')[0];
-  if(id){const e=appData.expenses.find(x=>x.id===id);if(e){document.getElementById('ef-date').value=e.date||'';document.getElementById('ef-amount').value=e.amount||'';document.getElementById('ef-category').value=e.category||'Materials';document.getElementById('ef-project').value=e.project_id||'';document.getElementById('ef-desc').value=e.description||'';}}
-  document.getElementById('exp-modal').style.display='flex';
+function openExpenseModal(id) {
+  editingId = id || null;
+  const {projects} = appData;
+  const sel = document.getElementById('ef-project');
+  sel.innerHTML = '<option value="">—</option>' + projects.map(p=>`<option value="${p.id}">${esc(p.description||p.product_type||'Project')}</option>`).join('');
+  document.getElementById('exp-modal-title').textContent = id ? 'Edit Expense' : 'Add Expense';
+  document.getElementById('ef-desc').value = '';
+  document.getElementById('ef-amount').value = '';
+  document.getElementById('ef-category').value = 'Materials';
+  document.getElementById('ef-project').value = '';
+  if (!id) document.getElementById('ef-date').value = new Date().toISOString().split('T')[0];
+  if (id) {
+    const e = appData.expenses.find(x => x.id === id);
+    if (e) {
+      document.getElementById('ef-date').value     = e.date || '';
+      document.getElementById('ef-amount').value   = e.amount || '';
+      document.getElementById('ef-category').value = e.category || 'Materials';
+      document.getElementById('ef-project').value  = e.project_id || '';
+      document.getElementById('ef-desc').value     = e.description || '';
+    }
+  }
+  document.getElementById('exp-modal').style.display = 'flex';
 }
 
 async function saveExpense(){
