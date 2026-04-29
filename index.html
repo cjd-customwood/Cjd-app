@@ -2328,20 +2328,48 @@ function openProviderModal(id) {
   document.getElementById('provider-modal').style.display='flex';
 }
 
-async function saveProvider(){
-  const name=document.getElementById('pv-name').value.trim();
-  if(!name){alert('Provider name required.');return;}
-  _suppressRefresh['providers']=Date.now()+15000;
-  const row={name,category:document.getElementById('pv-cat').value,specialty:document.getElementById('pv-specialty').value.trim()||null,address:document.getElementById('pv-address').value.trim()||null,phone:document.getElementById('pv-phone').value.trim()||null,fax:document.getElementById('pv-fax').value.trim()||null,website:document.getElementById('pv-website').value.trim()||null,portal:document.getElementById('pv-portal').value.trim()||null,notes:document.getElementById('pv-notes').value.trim()||null};
-  const tempId=editingId||('temp_'+Date.now());
-  if(editingId){const idx=appData.providers.findIndex(p=>p.id===editingId);if(idx>=0)appData.providers[idx]={...appData.providers[idx],...row};}
-  else{appData.providers.push({id:tempId,...row});appData.providers.sort((a,b)=>a.name.localeCompare(b.name));}
-  closeProviderModal();renderProviders();populateProviderDropdowns();toast(editingId?'Provider updated ✓':'Provider added ✓');
-  try{
-    if(editingId){const u=await dbUpdate('providers',editingId,row);const idx=appData.providers.findIndex(p=>p.id===editingId);if(idx>=0)appData.providers[idx]={...appData.providers[idx],...u};}
-    else{const p=await dbInsert('providers',row);appData.providers=appData.providers.filter(x=>x.id!==tempId);appData.providers.push(p);appData.providers.sort((a,b)=>a.name.localeCompare(b.name));}
+async function saveProvider() {
+  const name = document.getElementById('pv-name').value.trim();
+  if (!name) { alert('Provider name required.'); return; }
+  // Suppress realtime on all related tables
+  _suppressRefresh['providers'] = Date.now() + 15000;
+  _suppressRefresh['medical_visits'] = Date.now() + 15000;
+  const row = {
+    name,
+    category:  document.getElementById('pv-cat').value,
+    specialty: document.getElementById('pv-specialty').value.trim() || null,
+    address:   document.getElementById('pv-address').value.trim()   || null,
+    phone:     document.getElementById('pv-phone').value.trim()     || null,
+    fax:       document.getElementById('pv-fax').value.trim()       || null,
+    website:   document.getElementById('pv-website').value.trim()   || null,
+    portal:    document.getElementById('pv-portal').value.trim()    || null,
+    notes:     document.getElementById('pv-notes').value.trim()     || null,
+  };
+  const tempId = editingId || ('temp_' + Date.now());
+  if (editingId) {
+    const idx = appData.providers.findIndex(p => p.id === editingId);
+    if (idx >= 0) appData.providers[idx] = { ...appData.providers[idx], ...row };
+  } else {
+    appData.providers.push({ id: tempId, ...row });
+    appData.providers.sort((a,b) => a.name.localeCompare(b.name));
+  }
+  closeProviderModal();
+  renderProviders();
+  populateProviderDropdowns();
+  toast(editingId ? 'Provider updated ✓' : 'Provider added ✓');
+  try {
+    if (editingId) {
+      const u = await dbUpdate('providers', editingId, row);
+      const idx = appData.providers.findIndex(p => p.id === editingId);
+      if (idx >= 0) appData.providers[idx] = { ...appData.providers[idx], ...u };
+    } else {
+      const p = await dbInsert('providers', row);
+      appData.providers = appData.providers.filter(x => x.id !== tempId);
+      appData.providers.push(p);
+      appData.providers.sort((a,b) => a.name.localeCompare(b.name));
+    }
     populateProviderDropdowns();
-  }catch(e){toast('Sync error');setSyncErr();}
+  } catch(e) { toast('Sync error'); setSyncErr(); }
 }
 
 function openApptModal(id){
@@ -3319,6 +3347,14 @@ function setup2FA(userKey, userName) {
 
 function disable2FA(userKey) {
   if (!confirm('Remove 2FA for this user? They will only need their PIN to log in.')) return;
+  const secrets = getTotpSecrets();
+  delete secrets[userKey];
+  saveTotpSecrets(secrets);
+  renderTotpSettings();
+  toast('2FA removed');
+}
+
+if (!confirm('Remove 2FA for this user? They will only need their PIN to log in.')) return;
   const secrets = getTotpSecrets();
   delete secrets[userKey];
   saveTotpSecrets(secrets);
