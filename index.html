@@ -1507,49 +1507,66 @@ function renderDashboard() {
 
 function renderProjects() {
   const {projects, clients} = appData;
-  const search=(document.getElementById('proj-search')?.value||'').toLowerCase();
-  const statusF=document.getElementById('proj-filter-status')?.value||'';
-  const typeF=document.getElementById('proj-filter-type')?.value||'';
-  const assignedF=document.getElementById('proj-filter-assigned')?.value||'';
-  const clientMap={};clients.forEach(c=>clientMap[c.id]=c.name);
+  const search    = (document.getElementById('proj-search')?.value||'').toLowerCase();
+  const statusF   = document.getElementById('proj-filter-status')?.value||'';
+  const typeF     = document.getElementById('proj-filter-type')?.value||'';
+  const assignedF = document.getElementById('proj-filter-assigned')?.value||'';
+
+  // Build client map
+  const clientMap = {};
+  clients.forEach(c => clientMap[c.id] = c.name);
 
   // Populate type filter
-  const types=[...new Set(projects.map(p=>p.product_type).filter(Boolean))];
-  const typesSel=document.getElementById('proj-filter-type');
-  const curType=typesSel.value;
-  typesSel.innerHTML='<option value="">All Types</option>'+types.map(t=>`<option${t===curType?' selected':''}>${esc(t)}</option>`).join('');
+  const types = [...new Set(projects.map(p=>p.product_type).filter(Boolean))];
+  const typesSel = document.getElementById('proj-filter-type');
+  if (typesSel) {
+    const curType = typesSel.value;
+    typesSel.innerHTML = '<option value="">All Types</option>' + types.map(t=>`<option${t===curType?' selected':''}>${esc(t)}</option>`).join('');
+  }
 
   // Populate assigned filter
-  const users=getUsers();
-  const assignedSel=document.getElementById('proj-filter-assigned');
-  const curAssigned=assignedSel.value;
-  assignedSel.innerHTML='<option value="">All Assigned</option>'+users.map(u=>`<option${u.name===curAssigned?' selected':''}>${esc(u.name)}</option>`).join('');
+  const users = getUsers();
+  const assignedSel = document.getElementById('proj-filter-assigned');
+  if (assignedSel) {
+    const curAssigned = assignedSel.value;
+    assignedSel.innerHTML = '<option value="">All Assigned</option>' + users.map(u=>`<option${u.name===curAssigned?' selected':''}>${esc(u.name)}</option>`).join('');
+  }
 
-  // Populate product type datalist
-  document.getElementById('type-list').innerHTML=types.map(t=>`<option value="${esc(t)}">`).join('');
+  // Populate type datalist
+  const dl = document.getElementById('type-list');
+  if (dl) dl.innerHTML = types.map(t=>`<option value="${esc(t)}">`).join('');
 
   // Populate assigned dropdown in modal
-  document.getElementById('pf-assigned').innerHTML='<option value="">Unassigned</option>'+users.map(u=>`<option>${esc(u.name)}</option>`).join('');
+  const assignedModal = document.getElementById('pf-assigned');
+  if (assignedModal) {
+    const curVal = assignedModal.value;
+    assignedModal.innerHTML = '<option value="">Unassigned</option>' + users.map(u=>`<option value="${esc(u.name)}">${esc(u.name)}</option>`).join('');
+    if (curVal) assignedModal.value = curVal;
+  }
 
-  const rows=projects.filter(p=>{
-    const cn=clientMap[p.client_id]||'';
-    if(search&&!cn.toLowerCase().includes(search)&&!(p.description||'').toLowerCase().includes(search))return false;
-    if(statusF&&p.status!==statusF)return false;
-    if(typeF&&p.product_type!==typeF)return false;
-    if(assignedF&&p.assigned_to!==assignedF)return false;
+  const rows = projects.filter(p => {
+    const cn = clientMap[p.client_id] || '';
+    if (search && !cn.toLowerCase().includes(search) && !(p.description||'').toLowerCase().includes(search)) return false;
+    if (statusF && p.status !== statusF) return false;
+    if (typeF && p.product_type !== typeF) return false;
+    if (assignedF && p.assigned_to !== assignedF) return false;
     return true;
   });
 
-  const tbody=document.getElementById('proj-tbody');
-  if(!rows.length){tbody.innerHTML=`<tr><td colspan="12"><div class="empty-state"><div style="font-size:32px">🪵</div><p>No projects found</p></div></td></tr>`;return;}
+  const tbody = document.getElementById('proj-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="14"><div class="empty-state"><div style="font-size:32px">🪵</div><p>No projects found</p></div></td></tr>`;
+    return;
+  }
 
-  tbody.innerHTML=rows.map((p,i)=>{
-    const bal=(+p.price||0)-(+p.deposit||0);
-    const projExp=appData.expenses.filter(e=>e.project_id===p.id).reduce((s,e)=>s+(+e.amount||0),0);
-    const profit=p.price?(+p.price||0)-projExp:null;
+  tbody.innerHTML = rows.map((p,i) => {
+    const clientName = clientMap[p.client_id] || '—';
+    const bal = (parseFloat(p.price)||0) - (parseFloat(p.deposit)||0);
+    const projExp = appData.expenses.filter(e=>e.project_id===p.id).reduce((s,e)=>s+(+e.amount||0),0);
+    const profit = p.price ? (parseFloat(p.price)||0) - projExp : null;
     return `<tr class="${p.status==='Cancelled'?'cancelled':''}">
       <td style="font-family:var(--font-mono);color:var(--gray)">${i+1}</td>
-      <td><strong>${esc(clientMap[p.client_id]||'—')}</strong></td>
+      <td><strong>${esc(clientName)}</strong></td>
       <td style="max-width:180px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="${esc(p.description)}">${esc(p.description)||'—'}</td>
       <td>${esc(p.product_type)||'—'}</td>
       <td>${esc(p.assigned_to)||'—'}</td>
@@ -1612,44 +1629,48 @@ function openProjectModal(id) {
   document.getElementById('proj-modal').style.display = 'flex';
 }
 
-async function saveProject(){
-  const clientId=document.getElementById('pf-client').value;
-  if(!clientId){alert('Please select a client.');return;}
-  const row={
-    client_id:clientId, description:document.getElementById('pf-desc').value.trim(),
-    product_type:document.getElementById('pf-type').value.trim(),
-    assigned_to:document.getElementById('pf-assigned').value,
-    status:document.getElementById('pf-status').value,
-    wave_invoice:document.getElementById('pf-invoice').value.trim(),
-    price:document.getElementById('pf-price').value||null,
-    deposit:document.getElementById('pf-deposit').value||null,
-    deposit_date:document.getElementById('pf-dep-date').value||null,
-    paid_date:document.getElementById('pf-paid-date').value||null,
-    wave_check:document.getElementById('pf-wave').value,
-    notes:document.getElementById('pf-notes').value.trim(),
-    updated_by:currentUser.name,
+async function saveProject() {
+  const clientId = document.getElementById('pf-client').value;
+  if (!clientId) { alert('Please select a client.'); return; }
+  // Suppress realtime immediately
+  ['projects','clients','expenses'].forEach(t => _suppressRefresh[t] = Date.now() + 15000);
+  const row = {
+    client_id:    clientId,
+    description:  document.getElementById('pf-desc').value.trim(),
+    product_type: document.getElementById('pf-type').value.trim(),
+    assigned_to:  document.getElementById('pf-assigned').value,
+    status:       document.getElementById('pf-status').value,
+    wave_invoice: document.getElementById('pf-invoice').value.trim(),
+    price:        document.getElementById('pf-price').value || null,
+    deposit:      document.getElementById('pf-deposit').value || null,
+    deposit_date: document.getElementById('pf-dep-date').value || null,
+    paid_date:    document.getElementById('pf-paid-date').value || null,
+    wave_check:   document.getElementById('pf-wave').value,
+    notes:        document.getElementById('pf-notes').value.trim(),
+    updated_by:   currentUser?.name || '',
   };
-  // Optimistic update — close modal instantly, sync in background
   const tempId = editingId || ('temp_' + Date.now());
-  if(editingId){
-    const idx=appData.projects.findIndex(p=>p.id===editingId);
-    if(idx>=0)appData.projects[idx]={...appData.projects[idx],...row};
+  if (editingId) {
+    const idx = appData.projects.findIndex(p => p.id === editingId);
+    if (idx >= 0) appData.projects[idx] = { ...appData.projects[idx], ...row };
   } else {
-    appData.projects.unshift({id:tempId, created_at:new Date().toISOString(), ...row});
+    appData.projects.unshift({ id: tempId, created_at: new Date().toISOString(), ...row });
   }
-  closeProjModal(); renderProjects(); toast(editingId?'Project updated ✓':'Project added ✓');
+  closeProjModal();
+  renderProjects();
+  toast(editingId ? 'Project updated ✓' : 'Project added ✓');
   try {
-    if(editingId){
-      const updated=await dbUpdate('projects',editingId,row);
-      // Confirm local state matches DB
-      const idx=appData.projects.findIndex(p=>p.id===editingId);
-      if(idx>=0) appData.projects[idx]={...appData.projects[idx],...updated};
+    if (editingId) {
+      const u = await dbUpdate('projects', editingId, row);
+      const idx = appData.projects.findIndex(p => p.id === editingId);
+      if (idx >= 0) appData.projects[idx] = { ...appData.projects[idx], ...u };
     } else {
-      const created=await dbInsert('projects',row);
-      appData.projects=appData.projects.filter(p=>p.id!==tempId);
+      const created = await dbInsert('projects', row);
+      appData.projects = appData.projects.filter(p => p.id !== tempId);
       appData.projects.unshift(created);
+      renderProjects();
     }
-  } catch(e){ console.error(e); toast('Sync error — check connection'); setSyncErr(); }
+  } catch(e) { console.error(e); toast('Sync error'); setSyncErr(); }
 }
 
 function renderClients(){
@@ -1688,29 +1709,40 @@ function openClientModal(id) {
   document.getElementById('client-modal').style.display = 'flex';
 }
 
-async function saveClient(){
-  const name=document.getElementById('cf-name').value.trim();
-  if(!name){alert('Client name is required.');return;}
-  const row={name,phone:document.getElementById('cf-phone').value.trim(),email:document.getElementById('cf-email').value.trim(),address:document.getElementById('cf-address').value.trim(),notes:document.getElementById('cf-notes').value.trim()};
-  // Optimistic update — close modal instantly, sync in background
+async function saveClient() {
+  const name = document.getElementById('cf-name').value.trim();
+  if (!name) { alert('Client name is required.'); return; }
+  _suppressRefresh['clients'] = Date.now() + 15000;
+  const row = {
+    name,
+    phone:   document.getElementById('cf-phone').value.trim(),
+    email:   document.getElementById('cf-email').value.trim(),
+    address: document.getElementById('cf-address').value.trim(),
+    notes:   document.getElementById('cf-notes').value.trim(),
+  };
   const tempId = editingId || ('temp_' + Date.now());
-  if(editingId){
-    const idx=appData.clients.findIndex(c=>c.id===editingId);
-    if(idx>=0)appData.clients[idx]={...appData.clients[idx],...row};
+  if (editingId) {
+    const idx = appData.clients.findIndex(c => c.id === editingId);
+    if (idx >= 0) appData.clients[idx] = { ...appData.clients[idx], ...row };
   } else {
-    appData.clients.push({id:tempId, created_at:new Date().toISOString(), ...row});
-    appData.clients.sort((a,b)=>a.name.localeCompare(b.name));
+    appData.clients.push({ id: tempId, ...row });
+    appData.clients.sort((a,b) => a.name.localeCompare(b.name));
   }
-  closeClientModal(); renderClients(); toast(editingId?'Client updated ✓':'Client added ✓');
+  closeClientModal();
+  renderClients();
+  toast(editingId ? 'Client updated ✓' : 'Client added ✓');
   try {
-    if(editingId){ const u=await dbUpdate('clients',editingId,row); const idx=appData.clients.findIndex(c=>c.id===editingId); if(idx>=0) appData.clients[idx]={...appData.clients[idx],...u}; }
-    else {
-      const c=await dbInsert('clients',row);
-      appData.clients=appData.clients.filter(cl=>cl.id!==tempId);
+    if (editingId) {
+      const u = await dbUpdate('clients', editingId, row);
+      const idx = appData.clients.findIndex(c => c.id === editingId);
+      if (idx >= 0) appData.clients[idx] = { ...appData.clients[idx], ...u };
+    } else {
+      const c = await dbInsert('clients', row);
+      appData.clients = appData.clients.filter(x => x.id !== tempId);
       appData.clients.push(c);
-      appData.clients.sort((a,b)=>a.name.localeCompare(b.name));
+      appData.clients.sort((a,b) => a.name.localeCompare(b.name));
     }
-  } catch(e){ toast('Sync error — check connection'); setSyncErr(); }
+  } catch(e) { toast('Sync error'); setSyncErr(); }
 }
 
 function openExpenseModal(id) {
@@ -1737,28 +1769,39 @@ function openExpenseModal(id) {
   document.getElementById('exp-modal').style.display = 'flex';
 }
 
-async function saveExpense(){
-  const date=document.getElementById('ef-date').value;
-  const amount=document.getElementById('ef-amount').value;
-  if(!date||!amount){alert('Date and amount are required.');return;}
-  const row={date,amount:parseFloat(amount),category:document.getElementById('ef-category').value,project_id:document.getElementById('ef-project').value||null,description:document.getElementById('ef-desc').value.trim()};
-  // Optimistic update — close modal instantly, sync in background
+async function saveExpense() {
+  const date   = document.getElementById('ef-date').value;
+  const amount = document.getElementById('ef-amount').value;
+  if (!date || !amount) { alert('Date and amount are required.'); return; }
+  _suppressRefresh['expenses'] = Date.now() + 15000;
+  const row = {
+    date,
+    amount:     parseFloat(amount),
+    category:   document.getElementById('ef-category').value,
+    project_id: document.getElementById('ef-project').value || null,
+    description:document.getElementById('ef-desc').value.trim(),
+  };
   const tempId = editingId || ('temp_' + Date.now());
-  if(editingId){
-    const idx=appData.expenses.findIndex(e=>e.id===editingId);
-    if(idx>=0)appData.expenses[idx]={...appData.expenses[idx],...row};
+  if (editingId) {
+    const idx = appData.expenses.findIndex(e => e.id === editingId);
+    if (idx >= 0) appData.expenses[idx] = { ...appData.expenses[idx], ...row };
   } else {
-    appData.expenses.unshift({id:tempId, created_at:new Date().toISOString(), ...row});
+    appData.expenses.unshift({ id: tempId, created_at: new Date().toISOString(), ...row });
   }
-  closeExpModal(); renderExpenses(); toast(editingId?'Expense updated ✓':'Expense logged ✓');
-  try{
-    if(editingId){ const u=await dbUpdate('expenses',editingId,row); const idx=appData.expenses.findIndex(e=>e.id===editingId); if(idx>=0) appData.expenses[idx]={...appData.expenses[idx],...u}; }
-    else {
-      const e=await dbInsert('expenses',row);
-      appData.expenses=appData.expenses.filter(ex=>ex.id!==tempId);
+  closeExpModal();
+  renderExpenses();
+  toast(editingId ? 'Expense updated ✓' : 'Expense logged ✓');
+  try {
+    if (editingId) {
+      const u = await dbUpdate('expenses', editingId, row);
+      const idx = appData.expenses.findIndex(e => e.id === editingId);
+      if (idx >= 0) appData.expenses[idx] = { ...appData.expenses[idx], ...u };
+    } else {
+      const e = await dbInsert('expenses', row);
+      appData.expenses = appData.expenses.filter(x => x.id !== tempId);
       appData.expenses.unshift(e);
     }
-  }catch(e){ toast('Sync error — check connection'); setSyncErr(); }
+  } catch(e) { toast('Sync error'); setSyncErr(); }
 }
 
 function renderUsersList(){
