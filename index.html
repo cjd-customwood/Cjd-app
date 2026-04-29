@@ -2574,18 +2574,19 @@ function openMedicalModal(id) {
   if (id) {
     const v = appData.medicalVisits.find(x => x.id === id);
     if (v) {
-      document.getElementById('mdf-person').value    = v.person || 'KC';
-      document.getElementById('mdf-date').value      = v.visit_date || '';
-      document.getElementById('mdf-cat').value       = v.category || 'Medical';
-      document.getElementById('mdf-provider').value  = v.provider || '';
-      document.getElementById('mdf-address').value   = v.address || '';
-      document.getElementById('mdf-phone').value     = v.phone || '';
-      document.getElementById('mdf-reason').value    = v.reason || '';
-      document.getElementById('mdf-copay').value     = v.copay || '';
-      document.getElementById('mdf-paid').value      = v.amount_paid || '';
-      document.getElementById('mdf-billed').value    = v.amount_billed || '';
-      document.getElementById('mdf-ins').value       = v.insurance_paid || '';
+      document.getElementById('mdf-person').value     = v.person || 'KC';
+      document.getElementById('mdf-date').value       = v.visit_date || '';
+      document.getElementById('mdf-cat').value        = v.category || 'Medical';
+      document.getElementById('mdf-provider').value   = v.provider || '';
+      document.getElementById('mdf-address').value    = v.address || '';
+      document.getElementById('mdf-phone').value      = v.phone || '';
+      document.getElementById('mdf-reason').value     = v.reason || '';
+      document.getElementById('mdf-copay').value      = v.copay || '';
+      document.getElementById('mdf-paid').value       = v.amount_paid || '';
+      document.getElementById('mdf-billed').value     = v.amount_billed || '';
+      document.getElementById('mdf-ins').value        = v.insurance_paid || '';
       document.getElementById('mdf-deductible').value = v.applied_to_deductible || '';
+      document.getElementById('mdf-notes').value      = v.notes || '';
       if (v.provider) {
         const prov = appData.providers.find(p => p.name === v.provider);
         if (prov) document.getElementById('mdf-provider-sel').value = prov.id;
