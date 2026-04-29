@@ -1071,7 +1071,10 @@ body { font-family: var(--font-body); background: var(--wood-cream); color: var(
             <strong>Export Backup</strong>
             <span>Downloads all your data as a JSON file — save it to Google Drive or your device</span>
           </div>
-          <button class="btn-add" style="margin-left:0" onclick="exportAllData()">⬇️ Download Backup</button>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn-add" style="margin-left:0" onclick="exportToExcel()">📊 Download as Excel</button>
+            <button class="btn-add" style="margin-left:0;background:var(--gray)" onclick="exportAllData()">⬇️ Download as JSON</button>
+          </div>
         </div>
         <div class="setting-row">
           <div class="setting-label">
@@ -3536,6 +3539,161 @@ async function importBackup(file) {
   } catch(e) {
     console.error(e);
     alert('Restore failed: ' + e.message);
+  }
+}
+
+async function exportToExcel() {
+  try {
+    toast('Building spreadsheet...');
+    const wb = XLSX.utils.book_new();
+    const clientMap = {};
+    appData.clients.forEach(c => clientMap[c.id] = c.name);
+    const projMap = {};
+    appData.projects.forEach(p => projMap[p.id] = p.description || p.product_type || p.id);
+    const billMap = {};
+    appData.bills.forEach(b => billMap[b.id] = b.name);
+    const credMap = {};
+    appData.creditors.forEach(c => credMap[c.id] = c.name);
+
+    // ── Projects ──
+    const projRows = appData.projects.map(p => ({
+      'Client':           clientMap[p.client_id] || '',
+      'Description':      p.description || '',
+      'Product Type':     p.product_type || '',
+      'Assigned To':      p.assigned_to || '',
+      'Status':           p.status || '',
+      'Wave Invoice #':   p.wave_invoice || '',
+      'Price':            p.price ? +p.price : '',
+      'Deposit':          p.deposit ? +p.deposit : '',
+      'Balance Due':      p.price ? (+p.price||0)-(+p.deposit||0) : '',
+      'Deposit Date':     p.deposit_date || '',
+      'Date Paid':        p.paid_date || '',
+      'Wave ✓':           p.wave_check || '',
+      'Notes':            p.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(projRows), 'Projects');
+
+    // ── Clients ──
+    const clientRows = appData.clients.map(c => ({
+      'Name':    c.name || '',
+      'Phone':   c.phone || '',
+      'Email':   c.email || '',
+      'Address': c.address || '',
+      'Notes':   c.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(clientRows), 'Clients');
+
+    // ── Expenses ──
+    const expRows = appData.expenses.map(e => ({
+      'Date':        e.date || '',
+      'Project':     projMap[e.project_id] || '',
+      'Category':    e.category || '',
+      'Description': e.description || '',
+      'Amount':      e.amount ? +e.amount : '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(expRows), 'Expenses');
+
+    // ── Mileage ──
+    const rate = getMileageRate();
+    const mileRows = appData.mileage.map(m => ({
+      'Date':            m.date || '',
+      'From':            m.from_location || '',
+      'To':              m.to_location || '',
+      'Purpose':         m.purpose || '',
+      'Miles':           m.miles ? +m.miles : '',
+      'Rate (¢/mile)':   (rate*100).toFixed(1),
+      'Est. Deduction':  m.miles ? +(+m.miles * rate).toFixed(2) : '',
+      'Project':         projMap[m.project_id] || '',
+      'Notes':           m.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(mileRows), 'Mileage');
+
+    // ── Bills ──
+    const billRows = appData.bills.map(b => ({
+      'Bill Name':   b.name || '',
+      'Category':    b.category || '',
+      'Amount':      b.amount ? +b.amount : '',
+      'Who Pays':    b.who_pays || '',
+      'Autopay':     b.autopay ? 'Yes' : 'No',
+      'Frequency':   b.due_type || '',
+      'Due Day':     b.due_day || '',
+      'Phone':       b.phone || '',
+      'Website':     b.website || '',
+      'Notes':       b.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(billRows), 'Bills');
+
+    // ── Bill Payments ──
+    const bpRows = appData.billPayments.map(p => ({
+      'Bill':         billMap[p.bill_id] || '',
+      'Date Paid':    p.paid_date || '',
+      'Amount':       p.amount ? +p.amount : '',
+      'Confirmation': p.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(bpRows), 'Bill Payments');
+
+    // ── Creditors ──
+    const credRows = appData.creditors.map(c => ({
+      'Creditor':         c.name || '',
+      'Type':             c.creditor_type || '',
+      'Current Balance':  c.current_balance ? +c.current_balance : '',
+      'Original Balance': c.original_balance ? +c.original_balance : '',
+      'Interest Rate %':  c.interest_rate ? +c.interest_rate : '',
+      'Min Payment':      c.minimum_payment ? +c.minimum_payment : '',
+      'Due Day':          c.due_day || '',
+      'Phone':            c.phone || '',
+      'Notes':            c.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(credRows), 'Creditors');
+
+    // ── Creditor Payments ──
+    const cpRows = appData.creditorPayments.map(p => ({
+      'Creditor':   credMap[p.creditor_id] || '',
+      'Date Paid':  p.paid_date || '',
+      'Amount':     p.amount ? +p.amount : '',
+      'Notes':      p.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(cpRows), 'Creditor Payments');
+
+    // ── Medical Visits ──
+    const medRows = appData.medicalVisits.map(v => ({
+      'Person':                v.person || '',
+      'Date':                  v.visit_date || '',
+      'Category':              v.category || '',
+      'Provider':              v.provider || '',
+      'Address':               v.address || '',
+      'Phone':                 v.phone || '',
+      'Reason':                v.reason || '',
+      'Copay':                 v.copay ? +v.copay : '',
+      'Amount Paid':           v.amount_paid ? +v.amount_paid : '',
+      'Amount Billed':         v.amount_billed ? +v.amount_billed : '',
+      'Insurance Paid':        v.insurance_paid ? +v.insurance_paid : '',
+      'Applied to Deductible': v.applied_to_deductible ? +v.applied_to_deductible : '',
+      'Notes':                 v.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(medRows), 'Medical Visits');
+
+    // ── Providers ──
+    const provRows = appData.providers.map(p => ({
+      'Name':      p.name || '',
+      'Category':  p.category || '',
+      'Specialty': p.specialty || '',
+      'Address':   p.address || '',
+      'Phone':     p.phone || '',
+      'Fax':       p.fax || '',
+      'Website':   p.website || '',
+      'Portal':    p.portal || '',
+      'Notes':     p.notes || '',
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(provRows), 'Providers');
+
+    // Download
+    const date = new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb, `CJD_Backup_${date}.xlsx`);
+    toast('Excel backup downloaded ✓');
+  } catch(e) {
+    console.error(e);
+    toast('Export failed — try again');
   }
 }
 </script>
