@@ -3354,13 +3354,6 @@ function disable2FA(userKey) {
   toast('2FA removed');
 }
 
-if (!confirm('Remove 2FA for this user? They will only need their PIN to log in.')) return;
-  const secrets = getTotpSecrets();
-  delete secrets[userKey];
-  saveTotpSecrets(secrets);
-  renderTotpSettings();
-  toast('2FA removed');
-}
 
 </script>
 
