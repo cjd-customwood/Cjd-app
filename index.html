@@ -1590,46 +1590,43 @@ function openProjectModal(id) {
   editingId = id || null;
   const {clients} = appData;
 
-  // Populate client dropdown
   const cfSel = document.getElementById('pf-client');
   cfSel.innerHTML = '<option value="">Select client…</option>' + clients.map(c=>`<option value="${c.id}">${esc(c.name)}</option>`).join('');
 
-  // Populate assigned dropdown with current users
   const users = getUsers();
   const assignedSel = document.getElementById('pf-assigned');
   assignedSel.innerHTML = '<option value="">Unassigned</option>' + users.map(u=>`<option value="${esc(u.name)}">${esc(u.name)}</option>`).join('');
 
   document.getElementById('proj-modal-title').textContent = id ? 'Edit Project' : 'Add Project';
-
-  // Clear all fields first
   ['pf-desc','pf-type','pf-invoice','pf-price','pf-deposit','pf-dep-date','pf-paid-date','pf-notes'].forEach(f => document.getElementById(f).value = '');
-  document.getElementById('pf-client').value  = '';
-  document.getElementById('pf-status').value  = 'Not Started';
-  document.getElementById('pf-wave').value    = '';
+  document.getElementById('pf-client').value   = '';
+  document.getElementById('pf-status').value   = 'Not Started';
+  document.getElementById('pf-wave').value     = '';
   document.getElementById('pf-assigned').value = '';
 
-  // Populate fields if editing
   if (id) {
     const p = appData.projects.find(x => x.id === id);
     if (p) {
-      document.getElementById('pf-client').value   = p.client_id || '';
-      document.getElementById('pf-desc').value     = p.description || '';
-      document.getElementById('pf-type').value     = p.product_type || '';
-      document.getElementById('pf-assigned').value = p.assigned_to || '';
-      document.getElementById('pf-status').value   = p.status || 'Not Started';
-      document.getElementById('pf-invoice').value  = p.wave_invoice || '';
-      document.getElementById('pf-price').value    = p.price || '';
-      document.getElementById('pf-deposit').value  = p.deposit || '';
-      document.getElementById('pf-dep-date').value = p.deposit_date || '';
-      document.getElementById('pf-paid-date').value= p.paid_date || '';
-      document.getElementById('pf-wave').value     = p.wave_check || '';
-      document.getElementById('pf-notes').value    = p.notes || '';
+      // Support both snake_case (from Supabase) and camelCase (legacy)
+      document.getElementById('pf-client').value    = p.client_id || p.clientId || '';
+      document.getElementById('pf-desc').value      = p.description || p.desc || '';
+      document.getElementById('pf-type').value      = p.product_type || p.type || '';
+      document.getElementById('pf-assigned').value  = p.assigned_to || p.assigned || '';
+      document.getElementById('pf-status').value    = p.status || 'Not Started';
+      document.getElementById('pf-invoice').value   = p.wave_invoice || p.invoice || '';
+      document.getElementById('pf-price').value     = p.price || '';
+      document.getElementById('pf-deposit').value   = p.deposit || '';
+      document.getElementById('pf-dep-date').value  = p.deposit_date || p.depDate || '';
+      document.getElementById('pf-paid-date').value = p.paid_date || p.paidDate || '';
+      document.getElementById('pf-wave').value      = p.wave_check || p.wave || '';
+      document.getElementById('pf-notes').value     = p.notes || '';
     }
   }
   document.getElementById('proj-modal').style.display = 'flex';
 }
 
 async function saveProject() {
+  const _editingId = editingId; // capture before any modal close clears it
   const clientId = document.getElementById('pf-client').value;
   if (!clientId) { alert('Please select a client.'); return; }
   // Suppress realtime immediately
@@ -1649,20 +1646,20 @@ async function saveProject() {
     notes:        document.getElementById('pf-notes').value.trim(),
     updated_by:   currentUser?.name || '',
   };
-  const tempId = editingId || ('temp_' + Date.now());
-  if (editingId) {
-    const idx = appData.projects.findIndex(p => p.id === editingId);
+  const tempId = _editingId || ('temp_' + Date.now());
+  if (_editingId) {
+    const idx = appData.projects.findIndex(p => p.id === _editingId);
     if (idx >= 0) appData.projects[idx] = { ...appData.projects[idx], ...row };
   } else {
     appData.projects.unshift({ id: tempId, created_at: new Date().toISOString(), ...row });
   }
   closeProjModal();
   renderProjects();
-  toast(editingId ? 'Project updated ✓' : 'Project added ✓');
+  toast(_editingId ? 'Project updated ✓' : 'Project added ✓');
   try {
-    if (editingId) {
-      const u = await dbUpdate('projects', editingId, row);
-      const idx = appData.projects.findIndex(p => p.id === editingId);
+    if (_editingId) {
+      const u = await dbUpdate('projects', _editingId, row);
+      const idx = appData.projects.findIndex(p => p.id === _editingId);
       if (idx >= 0) appData.projects[idx] = { ...appData.projects[idx], ...u };
     } else {
       const created = await dbInsert('projects', row);
@@ -1710,6 +1707,7 @@ function openClientModal(id) {
 }
 
 async function saveClient() {
+  const _editingId = editingId; // capture before any modal close clears it
   const name = document.getElementById('cf-name').value.trim();
   if (!name) { alert('Client name is required.'); return; }
   _suppressRefresh['clients'] = Date.now() + 15000;
@@ -1720,9 +1718,9 @@ async function saveClient() {
     address: document.getElementById('cf-address').value.trim(),
     notes:   document.getElementById('cf-notes').value.trim(),
   };
-  const tempId = editingId || ('temp_' + Date.now());
-  if (editingId) {
-    const idx = appData.clients.findIndex(c => c.id === editingId);
+  const tempId = _editingId || ('temp_' + Date.now());
+  if (_editingId) {
+    const idx = appData.clients.findIndex(c => c.id === _editingId);
     if (idx >= 0) appData.clients[idx] = { ...appData.clients[idx], ...row };
   } else {
     appData.clients.push({ id: tempId, ...row });
@@ -1730,11 +1728,11 @@ async function saveClient() {
   }
   closeClientModal();
   renderClients();
-  toast(editingId ? 'Client updated ✓' : 'Client added ✓');
+  toast(_editingId ? 'Client updated ✓' : 'Client added ✓');
   try {
-    if (editingId) {
-      const u = await dbUpdate('clients', editingId, row);
-      const idx = appData.clients.findIndex(c => c.id === editingId);
+    if (_editingId) {
+      const u = await dbUpdate('clients', _editingId, row);
+      const idx = appData.clients.findIndex(c => c.id === _editingId);
       if (idx >= 0) appData.clients[idx] = { ...appData.clients[idx], ...u };
     } else {
       const c = await dbInsert('clients', row);
@@ -1751,10 +1749,10 @@ function openExpenseModal(id) {
   const sel = document.getElementById('ef-project');
   sel.innerHTML = '<option value="">—</option>' + projects.map(p=>`<option value="${p.id}">${esc(p.description||p.product_type||'Project')}</option>`).join('');
   document.getElementById('exp-modal-title').textContent = id ? 'Edit Expense' : 'Add Expense';
-  document.getElementById('ef-desc').value = '';
-  document.getElementById('ef-amount').value = '';
+  document.getElementById('ef-desc').value     = '';
+  document.getElementById('ef-amount').value   = '';
   document.getElementById('ef-category').value = 'Materials';
-  document.getElementById('ef-project').value = '';
+  document.getElementById('ef-project').value  = '';
   if (!id) document.getElementById('ef-date').value = new Date().toISOString().split('T')[0];
   if (id) {
     const e = appData.expenses.find(x => x.id === id);
@@ -1762,14 +1760,15 @@ function openExpenseModal(id) {
       document.getElementById('ef-date').value     = e.date || '';
       document.getElementById('ef-amount').value   = e.amount || '';
       document.getElementById('ef-category').value = e.category || 'Materials';
-      document.getElementById('ef-project').value  = e.project_id || '';
-      document.getElementById('ef-desc').value     = e.description || '';
+      document.getElementById('ef-project').value  = e.project_id || e.projectId || '';
+      document.getElementById('ef-desc').value     = e.description || e.desc || '';
     }
   }
   document.getElementById('exp-modal').style.display = 'flex';
 }
 
 async function saveExpense() {
+  const _editingId = editingId; // capture before any modal close clears it
   const date   = document.getElementById('ef-date').value;
   const amount = document.getElementById('ef-amount').value;
   if (!date || !amount) { alert('Date and amount are required.'); return; }
@@ -1781,20 +1780,20 @@ async function saveExpense() {
     project_id: document.getElementById('ef-project').value || null,
     description:document.getElementById('ef-desc').value.trim(),
   };
-  const tempId = editingId || ('temp_' + Date.now());
-  if (editingId) {
-    const idx = appData.expenses.findIndex(e => e.id === editingId);
+  const tempId = _editingId || ('temp_' + Date.now());
+  if (_editingId) {
+    const idx = appData.expenses.findIndex(e => e.id === _editingId);
     if (idx >= 0) appData.expenses[idx] = { ...appData.expenses[idx], ...row };
   } else {
     appData.expenses.unshift({ id: tempId, created_at: new Date().toISOString(), ...row });
   }
   closeExpModal();
   renderExpenses();
-  toast(editingId ? 'Expense updated ✓' : 'Expense logged ✓');
+  toast(_editingId ? 'Expense updated ✓' : 'Expense logged ✓');
   try {
-    if (editingId) {
-      const u = await dbUpdate('expenses', editingId, row);
-      const idx = appData.expenses.findIndex(e => e.id === editingId);
+    if (_editingId) {
+      const u = await dbUpdate('expenses', _editingId, row);
+      const idx = appData.expenses.findIndex(e => e.id === _editingId);
       if (idx >= 0) appData.expenses[idx] = { ...appData.expenses[idx], ...u };
     } else {
       const e = await dbInsert('expenses', row);
@@ -1962,23 +1961,23 @@ function renderMileage() {
 function openMileageModal(id) {
   editingId = id || null;
   const {projects} = appData;
-  document.getElementById('mf-project').innerHTML = '<option value="">—</option>' + projects.map(p => `<option value="${p.id}">${esc(p.description||p.product_type||'Project')}</option>`).join('');
+  document.getElementById('mf-project').innerHTML = '<option value="">—</option>' + projects.map(p=>`<option value="${p.id}">${esc(p.description||p.product_type||'Project')}</option>`).join('');
   document.getElementById('mil-modal-title').textContent = id ? 'Edit Trip' : 'Add Trip';
   ['mf-from','mf-to','mf-notes'].forEach(f => document.getElementById(f).value = '');
-  document.getElementById('mf-miles').value = '';
+  document.getElementById('mf-miles').value   = '';
   document.getElementById('mf-purpose').value = 'Client Visit';
   document.getElementById('mf-project').value = '';
   if (!id) document.getElementById('mf-date').value = new Date().toISOString().split('T')[0];
   if (id) {
     const m = appData.mileage.find(x => x.id === id);
     if (m) {
-      document.getElementById('mf-date').value = m.date||'';
-      document.getElementById('mf-miles').value = m.miles||'';
-      document.getElementById('mf-from').value = m.from_location||'';
-      document.getElementById('mf-to').value = m.to_location||'';
-      document.getElementById('mf-purpose').value = m.purpose||'Client Visit';
-      document.getElementById('mf-project').value = m.project_id||'';
-      document.getElementById('mf-notes').value = m.notes||'';
+      document.getElementById('mf-date').value    = m.date || '';
+      document.getElementById('mf-miles').value   = m.miles || '';
+      document.getElementById('mf-from').value    = m.from_location || m.from || '';
+      document.getElementById('mf-to').value      = m.to_location || m.to || '';
+      document.getElementById('mf-purpose').value = m.purpose || 'Client Visit';
+      document.getElementById('mf-project').value = m.project_id || m.projectId || '';
+      document.getElementById('mf-notes').value   = m.notes || '';
     }
   }
   updateMileagePreview();
@@ -1986,6 +1985,7 @@ function openMileageModal(id) {
 }
 
 async function saveMileage() {
+  const _editingId = editingId; // capture before any modal close clears it
   const date  = document.getElementById('mf-date').value;
   const miles = document.getElementById('mf-miles').value;
   if (!date || !miles) { alert('Date and miles are required.'); return; }
@@ -1998,16 +1998,16 @@ async function saveMileage() {
     notes: document.getElementById('mf-notes').value.trim(),
   };
   // Optimistic update
-  const tempId = editingId || ('temp_' + Date.now());
-  if (editingId) {
-    const idx = appData.mileage.findIndex(m => m.id === editingId);
+  const tempId = _editingId || ('temp_' + Date.now());
+  if (_editingId) {
+    const idx = appData.mileage.findIndex(m => m.id === _editingId);
     if (idx >= 0) appData.mileage[idx] = {...appData.mileage[idx], ...row};
   } else {
     appData.mileage.unshift({id: tempId, created_at: new Date().toISOString(), ...row});
   }
-  closeMilModal(); renderMileage(); toast(editingId ? 'Trip updated ✓' : 'Trip logged ✓');
+  closeMilModal(); renderMileage(); toast(_editingId ? 'Trip updated ✓' : 'Trip logged ✓');
   try {
-    if (editingId) { const u=await dbUpdate('mileage',editingId,row); const idx=appData.mileage.findIndex(m=>m.id===editingId); if(idx>=0) appData.mileage[idx]={...appData.mileage[idx],...u}; }
+    if (_editingId) { const u=await dbUpdate('mileage',_editingId,row); const idx=appData.mileage.findIndex(m=>m.id===_editingId); if(idx>=0) appData.mileage[idx]={...appData.mileage[idx],...u}; }
     else {
       const created = await dbInsert('mileage', row);
       appData.mileage = appData.mileage.filter(m => m.id !== tempId);
@@ -2132,38 +2132,39 @@ function renderBills() {
   }).join('');
 }
 
-function openBillModal(id){
-  editingId=id||null;
-  document.getElementById('bill-modal-title').textContent=id?'Edit Bill':'Add Bill';
-  ['bf-name','bf-amount','bf-phone','bf-website','bf-notes','bf-day','bf-custom'].forEach(f=>document.getElementById(f).value='');
-  document.getElementById('bf-alert').value='7';
-  document.getElementById('bf-autopay').value='false';
-  document.getElementById('bf-freq').value='Monthly';
-  document.getElementById('bf-who').value='KC';
-  document.getElementById('bf-cat').value='Housing';
+function openBillModal(id) {
+  editingId = id || null;
+  document.getElementById('bill-modal-title').textContent = id ? 'Edit Bill' : 'Add Bill';
+  ['bf-name','bf-amount','bf-phone','bf-website','bf-notes','bf-day','bf-custom'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('bf-alert').value   = '7';
+  document.getElementById('bf-autopay').value = 'false';
+  document.getElementById('bf-freq').value    = 'Monthly';
+  document.getElementById('bf-who').value     = 'KC';
+  document.getElementById('bf-cat').value     = 'Housing';
   updateDueFields();
-  if(id){
-    const b=appData.bills.find(x=>x.id===id);
-    if(b){
-      document.getElementById('bf-name').value=b.name||'';
-      document.getElementById('bf-cat').value=b.category||'Housing';
-      document.getElementById('bf-amount').value=b.amount||'';
-      document.getElementById('bf-who').value=b.who_pays||'KC';
-      document.getElementById('bf-autopay').value=b.autopay?'true':'false';
-      document.getElementById('bf-freq').value=b.due_type||'Monthly';
-      document.getElementById('bf-day').value=b.due_day||'';
-      document.getElementById('bf-custom').value=b.due_custom||'';
-      document.getElementById('bf-alert').value=b.alert_days||7;
-      document.getElementById('bf-phone').value=b.phone||'';
-      document.getElementById('bf-website').value=b.website||'';
-      document.getElementById('bf-notes').value=b.notes||'';
+  if (id) {
+    const b = appData.bills.find(x => x.id === id);
+    if (b) {
+      document.getElementById('bf-name').value    = b.name || '';
+      document.getElementById('bf-cat').value     = b.category || 'Housing';
+      document.getElementById('bf-amount').value  = b.amount || '';
+      document.getElementById('bf-who').value     = b.who_pays || 'KC';
+      document.getElementById('bf-autopay').value = b.autopay ? 'true' : 'false';
+      document.getElementById('bf-freq').value    = b.due_type || 'Monthly';
+      document.getElementById('bf-day').value     = b.due_day || '';
+      document.getElementById('bf-custom').value  = b.due_custom || '';
+      document.getElementById('bf-alert').value   = b.alert_days || 7;
+      document.getElementById('bf-phone').value   = b.phone || '';
+      document.getElementById('bf-website').value = b.website || '';
+      document.getElementById('bf-notes').value   = b.notes || '';
       updateDueFields();
     }
   }
-  document.getElementById('bill-modal').style.display='flex';
+  document.getElementById('bill-modal').style.display = 'flex';
 }
 
 async function saveBill(){
+  const _editingId = editingId; // capture before any modal close clears it
   const name=document.getElementById('bf-name').value.trim();
   if(!name){alert('Bill name required.');return;}
   const row={
@@ -2180,12 +2181,12 @@ async function saveBill(){
     notes:document.getElementById('bf-notes').value.trim()||null,
     active:true,
   };
-  const tempId=editingId||('temp_'+Date.now());
-  if(editingId){const idx=appData.bills.findIndex(b=>b.id===editingId);if(idx>=0)appData.bills[idx]={...appData.bills[idx],...row};}
+  const tempId=_editingId||('temp_'+Date.now());
+  if(_editingId){const idx=appData.bills.findIndex(b=>b.id===_editingId);if(idx>=0)appData.bills[idx]={...appData.bills[idx],...row};}
   else{appData.bills.push({id:tempId,...row});appData.bills.sort((a,b)=>(a.due_day||99)-(b.due_day||99));}
-  closeBillModal();renderBills();toast(editingId?'Bill updated ✓':'Bill added ✓');
+  closeBillModal();renderBills();toast(_editingId?'Bill updated ✓':'Bill added ✓');
   try{
-    if(editingId){const u=await dbUpdate('bills',editingId,row);const idx=appData.bills.findIndex(b=>b.id===editingId);if(idx>=0)appData.bills[idx]={...appData.bills[idx],...u};}
+    if(_editingId){const u=await dbUpdate('bills',_editingId,row);const idx=appData.bills.findIndex(b=>b.id===_editingId);if(idx>=0)appData.bills[idx]={...appData.bills[idx],...u};}
     else{const b=await dbInsert('bills',row);appData.bills=appData.bills.filter(x=>x.id!==tempId);appData.bills.push(b);appData.bills.sort((a,b)=>(a.due_day||99)-(b.due_day||99));}
   }catch(e){toast('Sync error');setSyncErr();}
 }
@@ -2256,30 +2257,31 @@ async function saveCredPayment(){
   }catch(e){toast('Sync error');setSyncErr();}
 }
 
-function openCreditorModal(id){
-  editingId=id||null;
-  document.getElementById('creditor-modal-title').textContent=id?'Edit Creditor':'Add Creditor';
-  ['cr-name','cr-balance','cr-orig','cr-rate','cr-min','cr-day','cr-phone','cr-website','cr-notes'].forEach(f=>document.getElementById(f).value='');
-  document.getElementById('cr-type').value='Credit Card';
-  if(id){
-    const c=appData.creditors.find(x=>x.id===id);
-    if(c){
-      document.getElementById('cr-name').value=c.name||'';
-      document.getElementById('cr-type').value=c.creditor_type||'Credit Card';
-      document.getElementById('cr-balance').value=c.current_balance||'';
-      document.getElementById('cr-orig').value=c.original_balance||'';
-      document.getElementById('cr-rate').value=c.interest_rate||'';
-      document.getElementById('cr-min').value=c.minimum_payment||'';
-      document.getElementById('cr-day').value=c.due_day||'';
-      document.getElementById('cr-phone').value=c.phone||'';
-      document.getElementById('cr-website').value=c.website||'';
-      document.getElementById('cr-notes').value=c.notes||'';
+function openCreditorModal(id) {
+  editingId = id || null;
+  document.getElementById('creditor-modal-title').textContent = id ? 'Edit Creditor' : 'Add Creditor';
+  ['cr-name','cr-balance','cr-orig','cr-rate','cr-min','cr-day','cr-phone','cr-website','cr-notes'].forEach(f => document.getElementById(f).value = '');
+  document.getElementById('cr-type').value = 'Credit Card';
+  if (id) {
+    const c = appData.creditors.find(x => x.id === id);
+    if (c) {
+      document.getElementById('cr-name').value    = c.name || '';
+      document.getElementById('cr-type').value    = c.creditor_type || 'Credit Card';
+      document.getElementById('cr-balance').value = c.current_balance || '';
+      document.getElementById('cr-orig').value    = c.original_balance || '';
+      document.getElementById('cr-rate').value    = c.interest_rate || '';
+      document.getElementById('cr-min').value     = c.minimum_payment || '';
+      document.getElementById('cr-day').value     = c.due_day || '';
+      document.getElementById('cr-phone').value   = c.phone || '';
+      document.getElementById('cr-website').value = c.website || '';
+      document.getElementById('cr-notes').value   = c.notes || '';
     }
   }
-  document.getElementById('creditor-modal').style.display='flex';
+  document.getElementById('creditor-modal').style.display = 'flex';
 }
 
 async function saveCreditor(){
+  const _editingId = editingId; // capture before any modal close clears it
   const name=document.getElementById('cr-name').value.trim();
   const balance=document.getElementById('cr-balance').value;
   if(!name||!balance){alert('Name and balance required.');return;}
@@ -2295,12 +2297,12 @@ async function saveCreditor(){
     notes:document.getElementById('cr-notes').value.trim()||null,
     active:true,
   };
-  const tempId=editingId||('temp_'+Date.now());
-  if(editingId){const idx=appData.creditors.findIndex(c=>c.id===editingId);if(idx>=0)appData.creditors[idx]={...appData.creditors[idx],...row};}
+  const tempId=_editingId||('temp_'+Date.now());
+  if(_editingId){const idx=appData.creditors.findIndex(c=>c.id===_editingId);if(idx>=0)appData.creditors[idx]={...appData.creditors[idx],...row};}
   else{appData.creditors.unshift({id:tempId,...row});}
-  closeCreditorModal();renderCreditors();toast(editingId?'Creditor updated ✓':'Creditor added ✓');
+  closeCreditorModal();renderCreditors();toast(_editingId?'Creditor updated ✓':'Creditor added ✓');
   try{
-    if(editingId){const u=await dbUpdate('creditors',editingId,row);const idx=appData.creditors.findIndex(c=>c.id===editingId);if(idx>=0)appData.creditors[idx]={...appData.creditors[idx],...u};}
+    if(_editingId){const u=await dbUpdate('creditors',_editingId,row);const idx=appData.creditors.findIndex(c=>c.id===_editingId);if(idx>=0)appData.creditors[idx]={...appData.creditors[idx],...u};}
     else{const c=await dbInsert('creditors',row);appData.creditors=appData.creditors.filter(x=>x.id!==tempId);appData.creditors.unshift(c);}
   }catch(e){toast('Sync error');setSyncErr();}
 }
@@ -2403,6 +2405,7 @@ function openProviderModal(id) {
 }
 
 async function saveProvider() {
+  const _editingId = editingId; // capture before any modal close clears it
   const name = document.getElementById('pv-name').value.trim();
   if (!name) { alert('Provider name required.'); return; }
   // Suppress realtime on all related tables
@@ -2419,9 +2422,9 @@ async function saveProvider() {
     portal:    document.getElementById('pv-portal').value.trim()    || null,
     notes:     document.getElementById('pv-notes').value.trim()     || null,
   };
-  const tempId = editingId || ('temp_' + Date.now());
-  if (editingId) {
-    const idx = appData.providers.findIndex(p => p.id === editingId);
+  const tempId = _editingId || ('temp_' + Date.now());
+  if (_editingId) {
+    const idx = appData.providers.findIndex(p => p.id === _editingId);
     if (idx >= 0) appData.providers[idx] = { ...appData.providers[idx], ...row };
   } else {
     appData.providers.push({ id: tempId, ...row });
@@ -2430,11 +2433,11 @@ async function saveProvider() {
   closeProviderModal();
   renderProviders();
   populateProviderDropdowns();
-  toast(editingId ? 'Provider updated ✓' : 'Provider added ✓');
+  toast(_editingId ? 'Provider updated ✓' : 'Provider added ✓');
   try {
-    if (editingId) {
-      const u = await dbUpdate('providers', editingId, row);
-      const idx = appData.providers.findIndex(p => p.id === editingId);
+    if (_editingId) {
+      const u = await dbUpdate('providers', _editingId, row);
+      const idx = appData.providers.findIndex(p => p.id === _editingId);
       if (idx >= 0) appData.providers[idx] = { ...appData.providers[idx], ...u };
     } else {
       const p = await dbInsert('providers', row);
@@ -2672,6 +2675,7 @@ function openMedicalModal(id) {
 }
 
 async function saveMedical() {
+  const _editingId = editingId; // capture before any modal close clears it
   const date   = document.getElementById('mdf-date').value;
   const person = document.getElementById('mdf-person').value;
   if (!date || !person) { alert('Date and person required.'); return; }
@@ -2691,20 +2695,20 @@ async function saveMedical() {
     applied_to_deductible: parseFloat(document.getElementById('mdf-deductible').value) || null,
     notes:                 document.getElementById('mdf-notes').value.trim() || null,
   };
-  const tempId = editingId || ('temp_' + Date.now());
-  if (editingId) {
-    const idx = appData.medicalVisits.findIndex(v => v.id === editingId);
+  const tempId = _editingId || ('temp_' + Date.now());
+  if (_editingId) {
+    const idx = appData.medicalVisits.findIndex(v => v.id === _editingId);
     if (idx >= 0) appData.medicalVisits[idx] = { ...appData.medicalVisits[idx], ...row };
   } else {
     appData.medicalVisits.unshift({ id: tempId, created_at: new Date().toISOString(), ...row });
   }
   closeMedicalModal();
   renderMedical();
-  toast(editingId ? 'Visit updated ✓' : 'Visit logged ✓');
+  toast(_editingId ? 'Visit updated ✓' : 'Visit logged ✓');
   try {
-    if (editingId) {
-      const u = await dbUpdate('medical_visits', editingId, row);
-      const idx = appData.medicalVisits.findIndex(v => v.id === editingId);
+    if (_editingId) {
+      const u = await dbUpdate('medical_visits', _editingId, row);
+      const idx = appData.medicalVisits.findIndex(v => v.id === _editingId);
       if (idx >= 0) appData.medicalVisits[idx] = { ...appData.medicalVisits[idx], ...u };
     } else {
       const v = await dbInsert('medical_visits', row);
